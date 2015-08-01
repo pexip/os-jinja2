@@ -1,3 +1,13 @@
+jinja2 (2.8-1) unstable; urgency=medium
+
+  * New upstream release
+    - drop jinja2-typos and drop_next_import_from_docs-jinjaext patches - both
+      applied upstream
+  * rewrite debian/rules to dh sequencer and pybuild buildsystem
+  * Standards-version bumped to 3.9.6 (no other changes needed)
+
+ -- Piotr Ożarowski <piotr@debian.org>  Sat, 01 Aug 2015 14:15:36 +0200
+
 jinja2 (2.7.3-1) unstable; urgency=medium
 
   * New upstream release
