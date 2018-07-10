@@ -12,7 +12,7 @@ Basics
 ------
 
 Jinja2 uses a central object called the template :class:`Environment`.
-Instances of this class are used to store the configuration, global objects
+Instances of this class are used to store the configuration and global objects,
 and are used to load templates from the file system or other locations.
 Even if you are creating templates from strings by using the constructor of
 :class:`Template` class, an environment is created automatically for you,
@@ -44,7 +44,7 @@ To render it with some variables, just call the :meth:`render` method::
 
     print template.render(the='variables', go='here')
 
-Using a template loader rather then passing strings to :class:`Template`
+Using a template loader rather than passing strings to :class:`Template`
 or :meth:`Environment.from_string` has multiple advantages.  Besides being
 a lot easier to use it also enables template inheritance.
 
@@ -154,6 +154,19 @@ useful if you want to dig deeper into Jinja2 or :ref:`develop extensions
         to modify this dict.  For more details see :ref:`global-namespace`.
         For valid object names have a look at :ref:`identifier-naming`.
 
+    .. attribute:: code_generator_class
+
+       The class used for code generation.  This should not be changed
+       in most cases, unless you need to modify the Python code a
+       template compiles to.
+
+    .. attribute:: context_class
+
+       The context used for templates.  This should not be changed
+       in most cases, unless you need to modify internals of how
+       template variables are handled.  For details, see
+       :class:`~jinja2.runtime.Context`.
+
     .. automethod:: overlay([options])
 
     .. method:: undefined([hint, obj, name, exc])
@@ -167,7 +180,7 @@ useful if you want to dig deeper into Jinja2 or :ref:`develop extensions
         provided as `exc` is raised if something with the generated undefined
         object is done that the undefined object does not allow.  The default
         exception is :exc:`UndefinedError`.  If a `hint` is provided the
-        `name` may be ommited.
+        `name` may be omitted.
 
         The most common way to create an undefined object is by providing
         a name only::
@@ -187,7 +200,7 @@ useful if you want to dig deeper into Jinja2 or :ref:`develop extensions
             return environment.undefined('no first item, sequence was empty')            
 
         If it the `name` or `obj` is known (for example because an attribute
-        was accessed) it shold be passed to the undefined object, even if
+        was accessed) it should be passed to the undefined object, even if
         a custom `hint` is provided.  This gives undefined objects the
         possibility to enhance the error message.
 
@@ -315,6 +328,11 @@ disallows all operations beside testing if it's an undefined object.
 .. autoclass:: jinja2.DebugUndefined()
 
 .. autoclass:: jinja2.StrictUndefined()
+
+There is also a factory function that can decorate undefined objects to
+implement logging on failures:
+
+.. autofunction:: jinja2.make_logging_undefined
 
 Undefined objects are created by calling :attr:`undefined`.
 
@@ -450,7 +468,7 @@ This is especially useful if you have a web application that is initialized on
 the first request and Jinja compiles many templates at once which slows down
 the application.
 
-To use a bytecode cache, instanciate it and pass it to the :class:`Environment`.
+To use a bytecode cache, instantiate it and pass it to the :class:`Environment`.
 
 .. autoclass:: jinja2.BytecodeCache
     :members: load_bytecode, dump_bytecode, clear
@@ -602,7 +620,7 @@ enabled::
 
     @evalcontextfilter
     def nl2br(eval_ctx, value):
-        result = u'\n\n'.join(u'<p>%s</p>' % p.replace('\n', '<br>\n')
+        result = u'\n\n'.join(u'<p>%s</p>' % p.replace('\n', Markup('<br>\n'))
                               for p in _paragraph_re.split(escape(value)))
         if eval_ctx.autoescape:
             result = Markup(result)
@@ -618,7 +636,7 @@ Evaluation Context
 ------------------
 
 The evaluation context (short eval context or eval ctx) is a new object
-introducted in Jinja 2.4 that makes it possible to activate and deactivate
+introduced in Jinja 2.4 that makes it possible to activate and deactivate
 compiled features at runtime.
 
 Currently it is only used to enable and disable the automatic escaping but

@@ -35,29 +35,12 @@ For more informations visit the new `Jinja2 webpage`_ and `documentation`_.
 .. _Jinja2 webpage: http://jinja.pocoo.org/
 .. _documentation: http://jinja.pocoo.org/2/documentation/
 """
-import sys
-
 from setuptools import setup
-
-
-# ignore the old '--with-speedups' flag
-try:
-    speedups_pos = sys.argv.index('--with-speedups')
-except ValueError:
-    pass
-else:
-    del sys.argv[speedups_pos]
-    sys.stderr.write('*' * 74 + '\n')
-    sys.stderr.write('WARNING:\n')
-    sys.stderr.write('  the --with-speedups flag is deprecated\n')
-    sys.stderr.write('  For the actual speedups install the MarkupSafe '
-                     'package.\n')
-    sys.stderr.write('*' * 74 + '\n')
 
 
 setup(
     name='Jinja2',
-    version='2.7.3',
+    version='2.8',
     url='http://jinja.pocoo.org/',
     license='BSD',
     author='Armin Ronacher',
@@ -74,15 +57,18 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Text Processing :: Markup :: HTML'
     ],
-    packages=['jinja2', 'jinja2.testsuite', 'jinja2.testsuite.res'],
-    install_requires=['markupsafe'],
+    packages=['jinja2'],
+    install_requires=['MarkupSafe'],
     extras_require={'i18n': ['Babel>=0.8']},
-    test_suite='jinja2.testsuite.suite',
     include_package_data=True,
     entry_points="""
     [babel.extractors]

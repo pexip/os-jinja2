@@ -15,11 +15,11 @@ Null-Master Fallback
 Jinja2 supports dynamic inheritance and does not distinguish between parent
 and child template as long as no `extends` tag is visited.  While this leads
 to the surprising behavior that everything before the first `extends` tag
-including whitespace is printed out instead of being igored, it can be used
+including whitespace is printed out instead of being ignored, it can be used
 for a neat trick.
 
 Usually child templates extend from one template that adds a basic HTML
-skeleton.  However it's possible put the `extends` tag into an `if` tag to
+skeleton.  However it's possible to put the `extends` tag into an `if` tag to
 only extend from the layout template if the `standalone` variable evaluates
 to false which it does per default if it's not defined.  Additionally a very
 basic skeleton is added to the file so that if it's indeed rendered with
@@ -63,7 +63,7 @@ child template::
     {% set active_page = "index" %}
 
 The layout template can then access `active_page`.  Additionally it makes
-sense to defined a default for that variable::
+sense to define a default for that variable::
 
     {% set navigation_bar = [
         ('/', 'index', 'Index'),
@@ -93,7 +93,7 @@ desired to have access to an outer loop it's possible to alias it::
       <tr>
       {% set rowloop = loop %}
       {% for cell in row %}
-        <td id="cell-{{ rowloop.index }}-{{ loop.index }}>{{ cell }}</td>
+        <td id="cell-{{ rowloop.index }}-{{ loop.index }}">{{ cell }}</td>
       {% endfor %}
       </tr>
     {% endfor %}
