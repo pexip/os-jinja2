@@ -1,3 +1,9 @@
+jinja2 (2.8-1pexip1) pexip; urgency=medium
+
+  * Migrate to Stretch
+
+ -- John-Mark Bell <jmb@pexip.com>  Tue, 10 Jul 2018 11:08:01 +0000
+
 jinja2 (2.8-1) unstable; urgency=medium
 
   * New upstream release
