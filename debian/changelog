@@ -1,3 +1,56 @@
+jinja2 (2.10-2) unstable; urgency=high
+
+  [ Thomas Goirand ]
+  * CVE-2019-10906: In Pallets Jinja before 2.10.1, str.format_map allows a
+    sandbox escape. Applied upstream patch: sandbox_str.format_map.patch
+    (Closes: #926602).
+
+ -- Piotr Ożarowski <piotr@debian.org>  Tue, 09 Apr 2019 21:58:20 +0200
+
+jinja2 (2.10-1) unstable; urgency=medium
+
+  * New upstream release
+  * Add python3-sphinx to Build-Depends and invoke dh_sphinxdoc after building
+    documentation
+  * Standards-version bumped to 4.1.1
+    - -doc package's Priority changed to optional
+
+ -- Piotr Ożarowski <piotr@debian.org>  Thu, 30 Nov 2017 10:54:37 +0100
+
+jinja2 (2.9.6-1) unstable; urgency=medium
+
+  [ Piotr Ożarowski ]
+  * New upstream release
+  * Install CHANGES file as upstream changelog (closes: 857722)
+  * Standards-version bumped to 4.0.0 (no other changes needed)
+
+  [ Michael Hudson-Doyle ]
+  * Install asyncsupport.py and asyncfilters.py now that Python 3.6 is a
+    supported version (but do not compile them on install with Python 3.5).
+    (closes: 862699)
+
+ -- Piotr Ożarowski <piotr@debian.org>  Tue, 20 Jun 2017 15:21:18 +0200
+
+jinja2 (2.9.5-1) unstable; urgency=medium
+
+  * New upstream release
+    - restores original repr of the internal _GroupTuple which fixes ansible
+    (closes: 851741)
+
+ -- Piotr Ożarowski <piotr@debian.org>  Tue, 07 Feb 2017 22:27:54 +0100
+
+jinja2 (2.9.4-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * Fixed VCS URL (https)
+
+  [ Piotr Ożarowski ]
+  * New upstream release
+    - do not install async* files, they require Python >= 3.6
+  * Standards-version bumped to 3.9.8 (no other changes needed)
+
+ -- Piotr Ożarowski <piotr@debian.org>  Tue, 10 Jan 2017 20:28:57 +0100
+
 jinja2 (2.8-1) unstable; urgency=medium
 
   * New upstream release
