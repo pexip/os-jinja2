@@ -1,0 +1,23 @@
+From 74bd64e56387f5b2931040dc7235a3509cde1611 Mon Sep 17 00:00:00 2001
+From: Armin Ronacher <armin.ronacher@active-4.com>
+Date: Thu, 29 Dec 2016 16:01:35 +0100
+Subject: [PATCH] Fixed a name error for an uncommon attribute access in the
+ sandbox
+
+---
+ jinja2/sandbox.py | 2 +-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/jinja2/sandbox.py b/jinja2/sandbox.py
+index c035ddea..549c4276 100644
+--- a/jinja2/sandbox.py
++++ b/jinja2/sandbox.py
+@@ -206,7 +206,7 @@ def is_internal_attribute(obj, attr):
+         if attr in UNSAFE_COROUTINE_ATTRIBUTES:
+             return True
+     elif hasattr(types, 'AsyncGeneratorType') and isinstance(obj, types.AsyncGeneratorType):
+-        if attri in UNSAFE_ASYNC_GENERATOR_ATTRIBUTES:
++        if attr in UNSAFE_ASYNC_GENERATOR_ATTRIBUTES:
+             return True
+     return attr.startswith('__')
+ 
