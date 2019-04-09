@@ -3,6 +3,8 @@ jinja2 (2.8-1pexip2) pexip; urgency=medium
   * debian/patches/support-sandboxing-in-format-expressions.patch,
     debian/patches/fixed-a-name-error-for-an-uncommon-attribute-access.patch:
     Fix for CVE-2016-10745.
+  * debian/patches/sandbox-str_format_map.patch:
+    Fix for CVE-2019-10906
 
  -- John-Mark Bell <jmb@pexip.com>  Tue, 09 Apr 2019 16:32:13 +0100
 

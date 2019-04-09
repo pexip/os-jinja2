@@ -1,0 +1,58 @@
+From a2a6c930bcca591a25d2b316fcfd2d6793897b26 Mon Sep 17 00:00:00 2001
+From: Armin Ronacher <armin.ronacher@active-4.com>
+Date: Sat, 6 Apr 2019 10:50:47 -0700
+Subject: [PATCH] sandbox str.format_map
+
+---
+ jinja2/sandbox.py      | 17 ++++++++++++++---
+ 2 files changed, 33 insertions(+), 3 deletions(-)
+
+diff --git a/jinja2/sandbox.py b/jinja2/sandbox.py
+index 93fb9d45..752e8128 100644
+--- a/jinja2/sandbox.py
++++ b/jinja2/sandbox.py
+@@ -137,7 +137,7 @@ def __len__(self):
+         return None
+     if not isinstance(callable, (types.MethodType,
+                                  types.BuiltinMethodType)) or \
+-       callable.__name__ != 'format':
++       callable.__name__ not in ('format', 'format_map'):
+         return None
+     obj = callable.__self__
+     if isinstance(obj, string_types):
+@@ -402,7 +402,7 @@ def unsafe_undefined(self, obj, attribute):
+             obj.__class__.__name__
+         ), name=attribute, obj=obj, exc=SecurityError)
+ 
+-    def format_string(self, s, args, kwargs):
++    def format_string(self, s, args, kwargs, format_func=None):
+         """If a format call is detected, then this is routed through this
+         method so that our safety sandbox can be used for it.
+         """
+@@ -410,6 +410,17 @@ def format_string(self, s, args, kwargs):
+             formatter = SandboxedEscapeFormatter(self, s.escape)
+         else:
+             formatter = SandboxedFormatter(self)
++
++        if format_func is not None and format_func.__name__ == 'format_map':
++            if len(args) != 1 or kwargs:
++                raise TypeError(
++                    'format_map() takes exactly one argument %d given'
++                    % (len(args) + (kwargs is not None))
++                )
++
++            kwargs = args[0]
++            args = None
++
+         kwargs = _MagicFormatMapping(args, kwargs)
+         rv = formatter.vformat(s, args, kwargs)
+         return type(s)(rv)
+@@ -418,7 +429,7 @@ def call(__self, __context, __obj, *args, **kwargs):
+         """Call an object from sandboxed code."""
+         fmt = inspect_format_method(__obj)
+         if fmt is not None:
+-            return __self.format_string(fmt, args, kwargs)
++            return __self.format_string(fmt, args, kwargs, __obj)
+ 
+         # the double prefixes are to avoid double keyword argument
+         # errors when proxying the call.
