@@ -1,3 +1,9 @@
+jinja2 (2.8-1pexip3) pexip; urgency=medium
+
+  * Make available for Python3
+
+ -- Carl Chipperfield <carl@pexip.com>  Tue, 18 Jun 2019 21:33:58 +0000
+
 jinja2 (2.8-1pexip2) pexip; urgency=medium
 
   * debian/patches/support-sandboxing-in-format-expressions.patch,
