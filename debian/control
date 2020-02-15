@@ -14,7 +14,7 @@ X-Python-Version: >= 2.6
 X-Python3-Version: >= 3.2
 Vcs-Svn: svn://anonscm.debian.org/python-modules/packages/jinja2/trunk/
 Vcs-Browser: http://anonscm.debian.org/viewvc/python-modules/packages/jinja2/trunk/
-XS-Pexip-Upstream: http://ftp.debian.org/debian/ stretch
+XS-Pexip-Upstream: http://ftp.debian.org/debian/ buster
 
 Package: python-jinja2
 Architecture: all
