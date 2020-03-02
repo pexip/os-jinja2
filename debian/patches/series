@@ -1,4 +1,1 @@
-support-sandboxing-in-format-expressions.patch
-fixed-a-name-error-for-an-uncommon-attribute-access.patch
-sandbox-str_format_map.patch
 CVE-2019-10906_sandbox_str.format_map.patch
