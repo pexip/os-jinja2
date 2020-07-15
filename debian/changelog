@@ -1,3 +1,9 @@
+jinja2 (2.10-2pexip5) pexip; urgency=medium
+
+  * Rebuild in buster environment
+
+ -- Steve McIntyre <steve.mcintyre@pexip.com>  Wed, 15 Jul 2020 22:51:13 +0000
+
 jinja2 (2.10-2pexip4) pexip; urgency=medium
 
   * Rebuild in buster environment
