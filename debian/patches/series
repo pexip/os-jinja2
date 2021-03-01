@@ -1,1 +1,2 @@
-CVE-2019-10906_sandbox_str.format_map.patch
+py3.9-fix-collections-import.patch
+0002-docs-disable-sphinxcontrib.log_cabinet.patch

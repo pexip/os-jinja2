@@ -3,6 +3,7 @@
 #export DH_VERBOSE=1
 
 export PYBUILD_NAME=jinja2
+export PYBUILD_INSTALL_ARGS_python2=--no-compile
 
 %:
 	dh $@ --with python2,python3,sphinxdoc --buildsystem=pybuild
@@ -12,7 +13,17 @@ override_dh_auto_clean:
 	dh_auto_clean
 
 override_dh_auto_build-indep:
-	PYTHONPATH=$(CURDIR):$(CURDIR)/docs make -C docs html
+	PYTHONPATH=$(CURDIR)/src:$(CURDIR)/docs make -C docs html
+
+override_dh_installdocs:
+	# install into -doc package and keep the symlink
+	dh_installdocs -p python-jinja2-doc --doc-main-package python-jinja2-doc
+	dh_installdocs --remaining
+
+override_dh_installexamples:
+	# install into -doc package and keep the symlink
+	dh_installexamples -p python-jinja2-doc --doc-main-package python-jinja2-doc
+	dh_installexamples --remaining
 
 override_dh_installchangelogs:
 	dh_installchangelogs CHANGES.rst
