@@ -1,1 +1,2 @@
 CVE-2019-10906_sandbox_str.format_map.patch
+CVE-2020-28493_urlize_runtime.patch

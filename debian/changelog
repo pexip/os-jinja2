@@ -1,3 +1,10 @@
+jinja2 (2.10-2pexip6) pexip; urgency=medium
+
+  * Backport fix for CVE-2020-28493 from upstream commit
+    ef658dc3b6389b091d608e710a810ce8b87995b3.
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Mon, 26 Apr 2021 16:02:14 +0100
+
 jinja2 (2.10-2pexip5) pexip; urgency=medium
 
   * Rebuild in buster environment
