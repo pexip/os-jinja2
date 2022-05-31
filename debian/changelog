@@ -1,3 +1,78 @@
+jinja2 (2.11.3-1) unstable; urgency=medium
+
+  * Team upload.
+
+  [ Ondřej Nový ]
+  * d/control: Update Vcs-* fields with new Debian Python Team Salsa
+    layout.
+
+  [ Debian Janitor ]
+  * Apply multi-arch hints.
+    + python-jinja2-doc: Add Multi-Arch: foreign.
+
+  [ Sandro Tosi ]
+  * Use the new Debian Python Team contact name and address
+
+  [ Hans-Christoph Steiner ]
+  * New upstream release
+
+ -- Hans-Christoph Steiner <hans@eds.org>  Mon, 01 Mar 2021 12:05:52 +0100
+
+jinja2 (2.11.2-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Piotr Ożarowski <piotr@debian.org>  Thu, 04 Jun 2020 19:31:21 +0200
+
+jinja2 (2.11.1-1) unstable; urgency=medium
+
+  [ Thomas Goirand ]
+  * py3.9-fix-collections-import.patch: correctly "except ImportError:"
+    everywhere in the patch.
+
+  [ Salman Mohammadi ]
+  * d/control: change python-jinja2-doc to recommend python3-jinja2
+    (closes: 951672)
+
+
+  [ Piotr Ożarowski ]
+  * New upstream release
+  * Add python3-pallets-sphinx-themes and python3-sphinx-issues to Build-Depends
+  * Add patch to disable sphinxcontrib.log_cabinet for now as it's not
+    packaged in Debian yet (versionadded, versionchanged, deprecated
+    directives in changelog will not be used)
+  * Move Vim syntax files to python3-jinja2 package
+  * Standards-version bumped to 4.5.0 (no other changes needed)
+
+ -- Piotr Ożarowski <piotr@debian.org>  Thu, 02 Apr 2020 13:35:21 +0200
+
+jinja2 (2.10.1-2) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * Use debhelper-compat instead of debian/compat.
+  * Bump Standards-Version to 4.4.1.
+
+  [ Thomas Goirand ]
+  * Team upload.
+  * Add py3.9-fix-collections-import.patch (Closes: #949018).
+
+ -- Thomas Goirand <zigo@debian.org>  Thu, 27 Feb 2020 11:49:32 +0100
+
+jinja2 (2.10.1-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * d/control: Set Vcs-* to salsa.debian.org
+  * d/changelog: Remove trailing whitespaces
+  * d/control: Remove ancient X-Python-Version field
+  * d/control: Remove ancient X-Python3-Version field
+  * Convert git repository from git-dpm to gbp layout
+
+  [ Piotr Ożarowski ]
+  * New upstream release
+  * Standards-version bumped to 4.4.0 (no other changes needed)
+
+ -- Piotr Ożarowski <piotr@debian.org>  Wed, 10 Jul 2019 22:34:15 +0200
+
 jinja2 (2.10-2pexip6) pexip; urgency=medium
 
   * Backport fix for CVE-2020-28493 from upstream commit
@@ -228,7 +303,7 @@ jinja2 (2.5.5-4) unstable; urgency=low
 jinja2 (2.5.5-3) experimental; urgency=low
 
   * Bump minimum required python-support version to the one in experimental
-    to get Python 2.7 support (closes: 608149) 
+    to get Python 2.7 support (closes: 608149)
 
  -- Piotr Ożarowski <piotr@debian.org>  Mon, 27 Dec 2010 23:15:04 +0100
 
@@ -238,7 +313,7 @@ jinja2 (2.5.5-2) experimental; urgency=low
     version temporary bumped to 2.6.6-4, python-setuptools' to 0.6.14-5
     and python3-all's to 3.1.2-14 to make sure the right version from
     experimental will be used). Closes: 607450.
-  * Update debian/rules to handle Python >= 3.2 
+  * Update debian/rules to handle Python >= 3.2
 
  -- Piotr Ożarowski <piotr@debian.org>  Tue, 21 Dec 2010 20:58:19 +0100
 

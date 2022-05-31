@@ -1,0 +1,77 @@
+From: Thomas Goirand <zigo@debian.org>
+Date: Wed, 1 Apr 2020 14:08:47 +0200
+Subject: Python 3.9: fix collections import
+
+Bug-Debian: https://bugs.debian.org/949018
+Forwarded: no
+Last-Update: 2020-02-27
+
+As collections has moved to collections.abc, this produces a warning which
+may lead to unit testing errors: this is the case when building Rally.
+
+This patch attempts to import from collections.abc, and if it fails, falls
+back to collections. This should be harmless.
+
+Note that this patch is probably useless with future version, as hopefully,
+upstream will fix it (I didn't check). However, I didn't dare upgrading the
+package to the major upstream release 3.x.
+---
+ src/jinja2/nodes.py   | 5 ++++-
+ src/jinja2/sandbox.py | 5 ++++-
+ src/jinja2/utils.py   | 5 ++++-
+ 3 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/src/jinja2/nodes.py b/src/jinja2/nodes.py
+index 95bd614..753ecc5 100644
+--- a/src/jinja2/nodes.py
++++ b/src/jinja2/nodes.py
+@@ -4,7 +4,10 @@ some node tree helper functions used by the parser and compiler in order
+ to normalize nodes.
+ """
+ import operator
+-from collections import deque
++try:
++    from collections.abc import deque
++except ImportError:
++    from collections import deque
+ 
+ from markupsafe import Markup
+ 
+diff --git a/src/jinja2/sandbox.py b/src/jinja2/sandbox.py
+index cfd7993..9913966 100644
+--- a/src/jinja2/sandbox.py
++++ b/src/jinja2/sandbox.py
+@@ -5,8 +5,11 @@ Useful when the template itself comes from an untrusted source.
+ import operator
+ import types
+ import warnings
+-from collections import deque
+ from string import Formatter
++try:
++    from collections.abc import deque
++except ImportError:
++    from collections import deque
+ 
+ from markupsafe import EscapeFormatter
+ from markupsafe import Markup
+diff --git a/src/jinja2/utils.py b/src/jinja2/utils.py
+index b422ba9..e6c3783 100644
+--- a/src/jinja2/utils.py
++++ b/src/jinja2/utils.py
+@@ -3,12 +3,15 @@
+ import os
+ import re
+ import warnings
+-from collections import deque
+ from random import choice
+ from random import randrange
+ from string import ascii_letters as _letters
+ from string import digits as _digits
+ from threading import Lock
++try:
++    from collections.abc import deque
++except ImportError:
++    from collections import deque
+ 
+ from markupsafe import escape
+ from markupsafe import Markup

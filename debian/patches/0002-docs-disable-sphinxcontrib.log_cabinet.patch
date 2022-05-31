@@ -1,0 +1,22 @@
+From: =?utf-8?q?Piotr_O=C5=BCarowski?= <piotr@debian.org>
+Date: Thu, 2 Apr 2020 13:41:14 +0200
+Subject: docs: disable sphinxcontrib.log_cabinet
+
+it's not packaged in Debian yet
+---
+ docs/conf.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/docs/conf.py b/docs/conf.py
+index 01e530d..13238f5 100644
+--- a/docs/conf.py
++++ b/docs/conf.py
+@@ -15,7 +15,7 @@ extensions = [
+     "sphinx.ext.autodoc",
+     "sphinx.ext.intersphinx",
+     "pallets_sphinx_themes",
+-    "sphinxcontrib.log_cabinet",
++    # "sphinxcontrib.log_cabinet",
+     "sphinx_issues",
+ ]
+ intersphinx_mapping = {"python": ("https://docs.python.org/3/", None)}

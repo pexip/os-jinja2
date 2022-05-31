@@ -1,1 +1,2 @@
-debian/python3-jinja2.bcep usr/share/python3/bcep
+ext/Vim/jinja.vim	/usr/share/vim/addons/syntax/
+debian/jinja.yaml	/usr/share/vim/registry

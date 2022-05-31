@@ -3,17 +3,16 @@ Section: python
 Priority: optional
 Maintainer: Pexip AS <packaging@pexip.com>
 XSBC-Pexip-Original-Maintainer: Piotr Ożarowski <piotr@debian.org>
-XSBC-Pexip-Original-Uploaders: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
-Build-Depends: debhelper (>= 9), dh-python,
+XSBC-Pexip-Original-Uploaders: Debian Python Team <team+python@tracker.debian.org>
+Build-Depends: debhelper-compat (= 12), dh-python,
  python-all (>= 2.6.6-3), python3-all,
  python-setuptools (>= 0.6b3-1~), python3-setuptools,
- python3-sphinx, python3-pygments
-Standards-Version: 4.1.1
+ python3-sphinx, python3-pallets-sphinx-themes, python3-sphinx-issues,
+ python3-pygments
+Standards-Version: 4.5.0
 Homepage: http://jinja.pocoo.org/
-X-Python-Version: >= 2.6
-X-Python3-Version: >= 3.2
-Vcs-Git: https://anonscm.debian.org/git/python-modules/packages/jinja2.git
-Vcs-Browser: https://anonscm.debian.org/cgit/python-modules/packages/jinja2.git
+Vcs-Git: https://salsa.debian.org/python-team/packages/jinja2.git
+Vcs-Browser: https://salsa.debian.org/python-team/packages/jinja2
 XS-Pexip-Upstream: http://deb.debian.org/debian/ bullseye
 
 Package: python-jinja2
@@ -45,7 +44,8 @@ Package: python-jinja2-doc
 Section: doc
 Architecture: all
 Depends: ${sphinxdoc:Depends}, ${misc:Depends}
-Recommends: python-jinja2
+Recommends: python3-jinja2
+Multi-Arch: foreign
 Description: documentation for the Jinja2 Python library
  Jinja2 is a small but fast and easy to use stand-alone template engine
  .
@@ -56,8 +56,9 @@ Package: python3-jinja2
 Architecture: all
 Depends: ${python3:Depends}, ${misc:Depends}, python3-markupsafe
 Recommends: python3-pkg-resources
-Provides: ${python3:Provides}
 Suggests: python-jinja2-doc
+Breaks: python-jinja2 (<< 2.11.1-1)
+Replaces: python-jinja2 (<< 2.11.1-1)
 Description: small but fast and easy to use stand-alone template engine
  Jinja2 is a template engine written in pure Python. It provides a Django
  inspired non-XML syntax but supports inline expressions and an optional
