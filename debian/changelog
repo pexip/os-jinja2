@@ -1,3 +1,9 @@
+jinja2 (2.11.3-1pexip1) pexip; urgency=medium
+
+  * Initial bullseye build
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Thu, 02 Jun 2022 14:42:20 +0100
+
 jinja2 (2.11.3-1) unstable; urgency=medium
 
   * Team upload.
