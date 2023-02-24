@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-import os
 import shutil
 import tempfile
+from pathlib import Path
 
 import pytest
 
@@ -19,18 +18,17 @@ from jinja2 import Undefined
 from jinja2 import UndefinedError
 from jinja2.compiler import CodeGenerator
 from jinja2.runtime import Context
-from jinja2.utils import contextfunction
 from jinja2.utils import Cycler
-from jinja2.utils import environmentfunction
-from jinja2.utils import evalcontextfunction
+from jinja2.utils import pass_context
+from jinja2.utils import pass_environment
+from jinja2.utils import pass_eval_context
 
 
-class TestExtendedAPI(object):
+class TestExtendedAPI:
     def test_item_and_attribute(self, env):
         from jinja2.sandbox import SandboxedEnvironment
 
         for env in Environment(), SandboxedEnvironment():
-            # the |list is necessary for python3
             tmpl = env.from_string("{{ foo.items()|list }}")
             assert tmpl.render(foo={"items": 42}) == "[('items', 42)]"
             tmpl = env.from_string('{{ foo|attr("items")()|list }}')
@@ -55,7 +53,7 @@ class TestExtendedAPI(object):
         assert t.render(value=123) == "<int>"
 
     def test_context_finalize(self):
-        @contextfunction
+        @pass_context
         def finalize(context, value):
             return value * context["scale"]
 
@@ -64,7 +62,7 @@ class TestExtendedAPI(object):
         assert t.render(value=5, scale=3) == "15"
 
     def test_eval_finalize(self):
-        @evalcontextfunction
+        @pass_eval_context
         def finalize(eval_ctx, value):
             return str(eval_ctx.autoescape) + value
 
@@ -73,7 +71,7 @@ class TestExtendedAPI(object):
         assert t.render(value="<script>") == "True&lt;script&gt;"
 
     def test_env_autoescape(self):
-        @environmentfunction
+        @pass_environment
         def finalize(env, value):
             return " ".join(
                 (env.variable_start_string, repr(value), env.variable_end_string)
@@ -161,11 +159,11 @@ class TestExtendedAPI(object):
             t.render(total=MAX_RANGE + 1)
 
 
-class TestMeta(object):
+class TestMeta:
     def test_find_undeclared_variables(self, env):
         ast = env.parse("{% set foo = 42 %}{{ bar + foo }}")
         x = meta.find_undeclared_variables(ast)
-        assert x == set(["bar"])
+        assert x == {"bar"}
 
         ast = env.parse(
             "{% set foo = 42 %}{{ bar + foo }}"
@@ -174,11 +172,11 @@ class TestMeta(object):
             "{% endfor %}"
         )
         x = meta.find_undeclared_variables(ast)
-        assert x == set(["bar", "seq", "muh"])
+        assert x == {"bar", "seq", "muh"}
 
         ast = env.parse("{% for x in range(5) %}{{ x }}{% endfor %}{{ foo }}")
         x = meta.find_undeclared_variables(ast)
-        assert x == set(["foo"])
+        assert x == {"foo"}
 
     def test_find_refererenced_templates(self, env):
         ast = env.parse('{% extends "layout.html" %}{% include helper %}')
@@ -214,7 +212,7 @@ class TestMeta(object):
         assert list(i) == ["foo.html", "bar.html", None]
 
 
-class TestStreaming(object):
+class TestStreaming:
     def test_basic_streaming(self, env):
         t = env.from_string(
             "<ul>{% for item in seq %}<li>{{ loop.index }} - {{ item }}</li>"
@@ -231,8 +229,8 @@ class TestStreaming(object):
         )
         stream = tmpl.stream(seq=list(range(3)))
         stream.enable_buffering(size=3)
-        assert next(stream) == u"<ul><li>1"
-        assert next(stream) == u" - 0</li>"
+        assert next(stream) == "<ul><li>1"
+        assert next(stream) == " - 0</li>"
 
     def test_streaming_behavior(self, env):
         tmpl = env.from_string("")
@@ -244,18 +242,17 @@ class TestStreaming(object):
         assert not stream.buffered
 
     def test_dump_stream(self, env):
-        tmp = tempfile.mkdtemp()
+        tmp = Path(tempfile.mkdtemp())
         try:
-            tmpl = env.from_string(u"\u2713")
+            tmpl = env.from_string("\u2713")
             stream = tmpl.stream()
-            stream.dump(os.path.join(tmp, "dump.txt"), "utf-8")
-            with open(os.path.join(tmp, "dump.txt"), "rb") as f:
-                assert f.read() == b"\xe2\x9c\x93"
+            stream.dump(str(tmp / "dump.txt"), "utf-8")
+            assert (tmp / "dump.txt").read_bytes() == b"\xe2\x9c\x93"
         finally:
             shutil.rmtree(tmp)
 
 
-class TestUndefined(object):
+class TestUndefined:
     def test_stopiteration_is_undefined(self):
         def test():
             raise StopIteration()
@@ -274,8 +271,8 @@ class TestUndefined(object):
         # property that resolves the wrapped function. If that wrapped
         # function raises an AttributeError, printing the repr of the
         # object in the undefined message would cause a RecursionError.
-        class Error(object):
-            @property
+        class Error:
+            @property  # type: ignore
             def __class__(self):
                 raise AttributeError()
 
@@ -287,7 +284,7 @@ class TestUndefined(object):
     def test_logging_undefined(self):
         _messages = []
 
-        class DebugLogger(object):
+        class DebugLogger:
             def warning(self, msg, *args):
                 _messages.append("W:" + msg % args)
 
@@ -296,29 +293,30 @@ class TestUndefined(object):
 
         logging_undefined = make_logging_undefined(DebugLogger())
         env = Environment(undefined=logging_undefined)
-        assert env.from_string("{{ missing }}").render() == u""
+        assert env.from_string("{{ missing }}").render() == ""
         pytest.raises(UndefinedError, env.from_string("{{ missing.attribute }}").render)
         assert env.from_string("{{ missing|list }}").render() == "[]"
         assert env.from_string("{{ missing is not defined }}").render() == "True"
         assert env.from_string("{{ foo.missing }}").render(foo=42) == ""
         assert env.from_string("{{ not missing }}").render() == "True"
         assert _messages == [
-            "W:Template variable warning: missing is undefined",
+            "W:Template variable warning: 'missing' is undefined",
             "E:Template variable error: 'missing' is undefined",
-            "W:Template variable warning: missing is undefined",
-            "W:Template variable warning: int object has no attribute missing",
-            "W:Template variable warning: missing is undefined",
+            "W:Template variable warning: 'missing' is undefined",
+            "W:Template variable warning: 'int object' has no attribute 'missing'",
+            "W:Template variable warning: 'missing' is undefined",
         ]
 
     def test_default_undefined(self):
         env = Environment(undefined=Undefined)
-        assert env.from_string("{{ missing }}").render() == u""
+        assert env.from_string("{{ missing }}").render() == ""
         pytest.raises(UndefinedError, env.from_string("{{ missing.attribute }}").render)
         assert env.from_string("{{ missing|list }}").render() == "[]"
         assert env.from_string("{{ missing is not defined }}").render() == "True"
         assert env.from_string("{{ foo.missing }}").render(foo=42) == ""
         assert env.from_string("{{ not missing }}").render() == "True"
         pytest.raises(UndefinedError, env.from_string("{{ missing - 1}}").render)
+        assert env.from_string("{{ 'foo' in missing }}").render() == "False"
         und1 = Undefined(name="x")
         und2 = Undefined(name="y")
         assert und1 == und2
@@ -330,7 +328,7 @@ class TestUndefined(object):
     def test_chainable_undefined(self):
         env = Environment(undefined=ChainableUndefined)
         # The following tests are copied from test_default_undefined
-        assert env.from_string("{{ missing }}").render() == u""
+        assert env.from_string("{{ missing }}").render() == ""
         assert env.from_string("{{ missing|list }}").render() == "[]"
         assert env.from_string("{{ missing is not defined }}").render() == "True"
         assert env.from_string("{{ foo.missing }}").render(foo=42) == ""
@@ -340,19 +338,17 @@ class TestUndefined(object):
             getattr(ChainableUndefined, "__slots__")  # noqa: B009
 
         # The following tests ensure subclass functionality works as expected
-        assert env.from_string('{{ missing.bar["baz"] }}').render() == u""
-        assert (
-            env.from_string('{{ foo.bar["baz"]._undefined_name }}').render() == u"foo"
-        )
+        assert env.from_string('{{ missing.bar["baz"] }}').render() == ""
+        assert env.from_string('{{ foo.bar["baz"]._undefined_name }}').render() == "foo"
         assert (
             env.from_string('{{ foo.bar["baz"]._undefined_name }}').render(foo=42)
-            == u"bar"
+            == "bar"
         )
         assert (
             env.from_string('{{ foo.bar["baz"]._undefined_name }}').render(
                 foo={"bar": 42}
             )
-            == u"baz"
+            == "baz"
         )
 
     def test_debug_undefined(self):
@@ -363,13 +359,13 @@ class TestUndefined(object):
         assert env.from_string("{{ missing is not defined }}").render() == "True"
         assert (
             env.from_string("{{ foo.missing }}").render(foo=42)
-            == u"{{ no such element: int object['missing'] }}"
+            == "{{ no such element: int object['missing'] }}"
         )
         assert env.from_string("{{ not missing }}").render() == "True"
         undefined_hint = "this is testing undefined hint of DebugUndefined"
         assert (
             str(DebugUndefined(hint=undefined_hint))
-            == u"{{ undefined value printed: %s }}" % undefined_hint
+            == f"{{{{ undefined value printed: {undefined_hint} }}}}"
         )
         with pytest.raises(AttributeError):
             getattr(DebugUndefined, "__slots__")  # noqa: B009
@@ -379,6 +375,7 @@ class TestUndefined(object):
         pytest.raises(UndefinedError, env.from_string("{{ missing }}").render)
         pytest.raises(UndefinedError, env.from_string("{{ missing.attribute }}").render)
         pytest.raises(UndefinedError, env.from_string("{{ missing|list }}").render)
+        pytest.raises(UndefinedError, env.from_string("{{ 'foo' in missing }}").render)
         assert env.from_string("{{ missing is not defined }}").render() == "True"
         pytest.raises(
             UndefinedError, env.from_string("{{ foo.missing }}").render, foo=42
@@ -407,7 +404,7 @@ class TestUndefined(object):
             Undefined(obj=42, name="upper")()
 
 
-class TestLowLevel(object):
+class TestLowLevel:
     def test_custom_code_generator(self):
         class CustomCodeGenerator(CodeGenerator):
             def visit_Const(self, node, frame=None):
@@ -415,7 +412,7 @@ class TestLowLevel(object):
                 if node.value == "foo":
                     self.write(repr("bar"))
                 else:
-                    super(CustomCodeGenerator, self).visit_Const(node, frame)
+                    super().visit_Const(node, frame)
 
         class CustomEnvironment(Environment):
             code_generator_class = CustomCodeGenerator
