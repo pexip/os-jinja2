@@ -13,7 +13,7 @@ Standards-Version: 4.5.0
 Homepage: http://jinja.pocoo.org/
 Vcs-Git: https://salsa.debian.org/python-team/packages/jinja2.git
 Vcs-Browser: https://salsa.debian.org/python-team/packages/jinja2
-XS-Pexip-Upstream: http://deb.debian.org/debian/ bullseye
+XS-Pexip-Upstream: http://deb.debian.org/debian/ bookworm
 
 Package: python-jinja2
 Architecture: all
