@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
 import pytest
 
-from jinja2 import DictLoader
-from jinja2 import Environment
+from jinja2.environment import Environment
 from jinja2.exceptions import TemplateNotFound
 from jinja2.exceptions import TemplatesNotFound
 from jinja2.exceptions import TemplateSyntaxError
+from jinja2.exceptions import UndefinedError
+from jinja2.loaders import DictLoader
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ def test_env():
     return env
 
 
-class TestImports(object):
+class TestImports:
     def test_context_imports(self, test_env):
         t = test_env.from_string('{% import "module" as m %}{{ m.test() }}')
         assert t.render(foo=42) == "[|23]"
@@ -92,8 +92,37 @@ class TestImports(object):
         assert m.variable == 42
         assert not hasattr(m, "notthere")
 
+    def test_not_exported(self, test_env):
+        t = test_env.from_string("{% from 'module' import nothing %}{{ nothing() }}")
 
-class TestIncludes(object):
+        with pytest.raises(UndefinedError, match="does not export the requested name"):
+            t.render()
+
+    def test_import_with_globals(self, test_env):
+        t = test_env.from_string(
+            '{% import "module" as m %}{{ m.test() }}', globals={"foo": 42}
+        )
+        assert t.render() == "[42|23]"
+
+        t = test_env.from_string('{% import "module" as m %}{{ m.test() }}')
+        assert t.render() == "[|23]"
+
+    def test_import_with_globals_override(self, test_env):
+        t = test_env.from_string(
+            '{% set foo = 41 %}{% import "module" as m %}{{ m.test() }}',
+            globals={"foo": 42},
+        )
+        assert t.render() == "[42|23]"
+
+    def test_from_import_with_globals(self, test_env):
+        t = test_env.from_string(
+            '{% from "module" import test %}{{ test() }}',
+            globals={"foo": 42},
+        )
+        assert t.render() == "[42|23]"
+
+
+class TestIncludes:
     def test_context_include(self, test_env):
         t = test_env.from_string('{% include "header" %}')
         assert t.render(foo=42) == "[42|23]"

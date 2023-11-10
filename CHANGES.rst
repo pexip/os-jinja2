@@ -1,5 +1,196 @@
 .. currentmodule:: jinja2
 
+Version 3.1.2
+-------------
+
+Released 2022-04-28
+
+-   Add parameters to ``Environment.overlay`` to match ``__init__``.
+    :issue:`1645`
+-   Handle race condition in ``FileSystemBytecodeCache``. :issue:`1654`
+
+
+Version 3.1.1
+-------------
+
+Released 2022-03-25
+
+-   The template filename on Windows uses the primary path separator.
+    :issue:`1637`
+
+
+Version 3.1.0
+-------------
+
+Released 2022-03-24
+
+-   Drop support for Python 3.6. :pr:`1534`
+-   Remove previously deprecated code. :pr:`1544`
+
+    -   ``WithExtension`` and ``AutoEscapeExtension`` are built-in now.
+    -   ``contextfilter`` and ``contextfunction`` are replaced by
+        ``pass_context``. ``evalcontextfilter`` and
+        ``evalcontextfunction`` are replaced by ``pass_eval_context``.
+        ``environmentfilter`` and ``environmentfunction`` are replaced
+        by ``pass_environment``.
+    -   ``Markup`` and ``escape`` should be imported from MarkupSafe.
+    -   Compiled templates from very old Jinja versions may need to be
+        recompiled.
+    -   Legacy resolve mode for ``Context`` subclasses is no longer
+        supported. Override ``resolve_or_missing`` instead of
+        ``resolve``.
+    -   ``unicode_urlencode`` is renamed to ``url_quote``.
+
+-   Add support for native types in macros. :issue:`1510`
+-   The ``{% trans %}`` tag can use ``pgettext`` and ``npgettext`` by
+    passing a context string as the first token in the tag, like
+    ``{% trans "title" %}``. :issue:`1430`
+-   Update valid identifier characters from Python 3.6 to 3.7.
+    :pr:`1571`
+-   Filters and tests decorated with ``@async_variant`` are pickleable.
+    :pr:`1612`
+-   Add ``items`` filter. :issue:`1561`
+-   Subscriptions (``[0]``, etc.) can be used after filters, tests, and
+    calls when the environment is in async mode. :issue:`1573`
+-   The ``groupby`` filter is case-insensitive by default, matching
+    other comparison filters. Added the ``case_sensitive`` parameter to
+    control this. :issue:`1463`
+-   Windows drive-relative path segments in template names will not
+    result in ``FileSystemLoader`` and ``PackageLoader`` loading from
+    drive-relative paths. :pr:`1621`
+
+
+Version 3.0.3
+-------------
+
+Released 2021-11-09
+
+-   Fix traceback rewriting internals for Python 3.10 and 3.11.
+    :issue:`1535`
+-   Fix how the native environment treats leading and trailing spaces
+    when parsing values on Python 3.10. :pr:`1537`
+-   Improve async performance by avoiding checks for common types.
+    :issue:`1514`
+-   Revert change to ``hash(Node)`` behavior. Nodes are hashed by id
+    again :issue:`1521`
+-   ``PackageLoader`` works when the package is a single module file.
+    :issue:`1512`
+
+
+Version 3.0.2
+-------------
+
+Released 2021-10-04
+
+-   Fix a loop scoping bug that caused assignments in nested loops
+    to still be referenced outside of it. :issue:`1427`
+-   Make ``compile_templates`` deterministic for filter and import
+    names. :issue:`1452, 1453`
+-   Revert an unintended change that caused ``Undefined`` to act like
+    ``StrictUndefined`` for the ``in`` operator. :issue:`1448`
+-   Imported macros have access to the current template globals in async
+    environments. :issue:`1494`
+-   ``PackageLoader`` will not include a current directory (.) path
+    segment. This allows loading templates from the root of a zip
+    import. :issue:`1467`
+
+
+Version 3.0.1
+-------------
+
+Released 2021-05-18
+
+-   Update MarkupSafe dependency to >= 2.0. :pr:`1418`
+-   Mark top-level names as exported so type checking understands
+    imports in user projects. :issue:`1426`
+-   Fix some types that weren't available in Python 3.6.0. :issue:`1433`
+-   The deprecation warning for unneeded ``autoescape`` and ``with_``
+    extensions shows more relevant context. :issue:`1429`
+-   Fixed calling deprecated ``jinja2.Markup`` without an argument.
+    Use ``markupsafe.Markup`` instead. :issue:`1438`
+-   Calling sync ``render`` for an async template uses ``asyncio.run``
+    on Python >= 3.7. This fixes a deprecation that Python 3.10
+    introduces. :issue:`1443`
+
+
+Version 3.0.0
+-------------
+
+Released 2021-05-11
+
+-   Drop support for Python 2.7 and 3.5.
+-   Bump MarkupSafe dependency to >=1.1.
+-   Bump Babel optional dependency to >=2.1.
+-   Remove code that was marked deprecated.
+-   Add type hinting. :pr:`1412`
+-   Use :pep:`451` API to load templates with
+    :class:`~loaders.PackageLoader`. :issue:`1168`
+-   Fix a bug that caused imported macros to not have access to the
+    current template's globals. :issue:`688`
+-   Add ability to ignore ``trim_blocks`` using ``+%}``. :issue:`1036`
+-   Fix a bug that caused custom async-only filters to fail with
+    constant input. :issue:`1279`
+-   Fix UndefinedError incorrectly being thrown on an undefined variable
+    instead of ``Undefined`` being returned on
+    ``NativeEnvironment`` on Python 3.10. :issue:`1335`
+-   Blocks can be marked as ``required``. They must be overridden at
+    some point, but not necessarily by the direct child. :issue:`1147`
+-   Deprecate the ``autoescape`` and ``with`` extensions, they are
+    built-in to the compiler. :issue:`1203`
+-   The ``urlize`` filter recognizes ``mailto:`` links and takes
+    ``extra_schemes`` (or ``env.policies["urlize.extra_schemes"]``) to
+    recognize other schemes. It tries to balance parentheses within a
+    URL instead of ignoring trailing characters. The parsing in general
+    has been updated to be more efficient and match more cases. URLs
+    without a scheme are linked as ``https://`` instead of ``http://``.
+    :issue:`522, 827, 1172`, :pr:`1195`
+-   Filters that get attributes, such as ``map`` and ``groupby``, can
+    use a false or empty value as a default. :issue:`1331`
+-   Fix a bug that prevented variables set in blocks or loops from
+    being accessed in custom context functions. :issue:`768`
+-   Fix a bug that caused scoped blocks from accessing special loop
+    variables. :issue:`1088`
+-   Update the template globals when calling
+    ``Environment.get_template(globals=...)`` even if the template was
+    already loaded. :issue:`295`
+-   Do not raise an error for undefined filters in unexecuted
+    if-statements and conditional expressions. :issue:`842`
+-   Add ``is filter`` and ``is test`` tests to test if a name is a
+    registered filter or test. This allows checking if a filter is
+    available in a template before using it. Test functions can be
+    decorated with ``@pass_environment``, ``@pass_eval_context``,
+    or ``@pass_context``. :issue:`842`, :pr:`1248`
+-   Support ``pgettext`` and ``npgettext`` (message contexts) in i18n
+    extension. :issue:`441`
+-   The ``|indent`` filter's ``width`` argument can be a string to
+    indent by. :pr:`1167`
+-   The parser understands hex, octal, and binary integer literals.
+    :issue:`1170`
+-   ``Undefined.__contains__`` (``in``) raises an ``UndefinedError``
+    instead of a ``TypeError``. :issue:`1198`
+-   ``Undefined`` is iterable in an async environment. :issue:`1294`
+-   ``NativeEnvironment`` supports async mode. :issue:`1362`
+-   Template rendering only treats ``\n``, ``\r\n`` and ``\r`` as line
+    breaks. Other characters are left unchanged. :issue:`769, 952, 1313`
+-   ``|groupby`` filter takes an optional ``default`` argument.
+    :issue:`1359`
+-   The function and filter decorators have been renamed and unified.
+    The old names are deprecated. :issue:`1381`
+
+    -   ``pass_context`` replaces ``contextfunction`` and
+        ``contextfilter``.
+    -   ``pass_eval_context`` replaces ``evalcontextfunction`` and
+        ``evalcontextfilter``
+    -   ``pass_environment`` replaces ``environmentfunction`` and
+        ``environmentfilter``.
+
+-   Async support no longer requires Jinja to patch itself. It must
+    still be enabled with ``Environment(enable_async=True)``.
+    :issue:`1390`
+-   Overriding ``Context.resolve`` is deprecated, override
+    ``resolve_or_missing`` instead. :issue:`1380`
+
+
 Version 2.11.3
 --------------
 
@@ -19,7 +210,7 @@ Released 2020-04-13
     :class:`~unittest.mock.Mock` to be treated as a
     :func:`contextfunction`. :issue:`1145`
 -   Update ``wordcount`` filter to trigger :class:`Undefined` methods
-    by wrapping the input in :func:`soft_unicode`. :pr:`1160`
+    by wrapping the input in :func:`soft_str`. :pr:`1160`
 -   Fix a hang when displaying tracebacks on Python 32-bit.
     :issue:`1162`
 -   Showing an undefined error for an object that raises
@@ -294,7 +485,7 @@ Released 2017-01-08
     possible. For more information and a discussion see :issue:`641`
 -   Resolved an issue where ``block scoped`` would not take advantage of
     the new scoping rules. In some more exotic cases a variable
-    overriden in a local scope would not make it into a block.
+    overridden in a local scope would not make it into a block.
 -   Change the code generation of the ``with`` statement to be in line
     with the new scoping rules. This resolves some unlikely bugs in edge
     cases. This also introduces a new internal ``With`` node that can be

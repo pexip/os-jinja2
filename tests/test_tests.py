@@ -1,15 +1,16 @@
-# -*- coding: utf-8 -*-
 import pytest
+from markupsafe import Markup
 
 from jinja2 import Environment
-from jinja2 import Markup
+from jinja2 import TemplateAssertionError
+from jinja2 import TemplateRuntimeError
 
 
 class MyDict(dict):
     pass
 
 
-class TestTestsCase(object):
+class TestTestsCase:
     def test_defined(self, env):
         tmpl = env.from_string("{{ missing is defined }}|{{ true is defined }}")
         assert tmpl.render() == "False|True"
@@ -110,7 +111,7 @@ class TestTestsCase(object):
         ),
     )
     def test_types(self, env, op, expect):
-        t = env.from_string("{{{{ {op} }}}}".format(op=op))
+        t = env.from_string(f"{{{{ {op} }}}}")
         assert t.render(mydict=MyDict(), complex=complex(1, 2)) == str(expect)
 
     def test_upper(self, env):
@@ -151,7 +152,7 @@ class TestTestsCase(object):
         ),
     )
     def test_compare_aliases(self, env, op, expect):
-        t = env.from_string("{{{{ 2 is {op} }}}}".format(op=op))
+        t = env.from_string(f"{{{{ 2 is {op} }}}}")
         assert t.render() == str(expect)
 
     def test_sameas(self, env):
@@ -207,3 +208,26 @@ class TestTestsCase(object):
             '{{ "baz" is in {"bar": 1}}}'
         )
         assert tmpl.render() == "True|True|False|True|False|True|False|True|False"
+
+
+def test_name_undefined(env):
+    with pytest.raises(TemplateAssertionError, match="No test named 'f'"):
+        env.from_string("{{ x is f }}")
+
+
+def test_name_undefined_in_if(env):
+    t = env.from_string("{% if x is defined %}{{ x is f }}{% endif %}")
+    assert t.render() == ""
+
+    with pytest.raises(TemplateRuntimeError, match="No test named 'f'"):
+        t.render(x=1)
+
+
+def test_is_filter(env):
+    assert env.call_test("filter", "title")
+    assert not env.call_test("filter", "bad-name")
+
+
+def test_is_test(env):
+    assert env.call_test("test", "number")
+    assert not env.call_test("test", "bad-name")

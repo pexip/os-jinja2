@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-import sys
-
 import pytest
 
 from jinja2 import DictLoader
@@ -10,10 +7,10 @@ from jinja2 import Template
 from jinja2 import TemplateAssertionError
 from jinja2 import TemplateNotFound
 from jinja2 import TemplateSyntaxError
-from jinja2._compat import text_type
+from jinja2.utils import pass_context
 
 
-class TestCorner(object):
+class TestCorner:
     def test_assigned_scoping(self, env):
         t = env.from_string(
             """
@@ -84,7 +81,7 @@ class TestCorner(object):
         assert t.render(wrapper=23) == "[1][2][3][4]23"
 
 
-class TestBug(object):
+class TestBug:
     def test_keyword_folding(self, env):
         env = Environment()
         env.filters["testing"] = lambda value, some: value + some
@@ -113,6 +110,15 @@ class TestBug(object):
             "http://www.example.org/&lt;foo</a>"
         )
 
+    def test_urlize_filter_closing_punctuation(self, env):
+        tmpl = env.from_string(
+            '{{ "(see http://www.example.org/?page=subj_<desc.h>)"|urlize }}'
+        )
+        assert tmpl.render() == (
+            '(see <a href="http://www.example.org/?page=subj_&lt;desc.h&gt;" '
+            'rel="noopener">http://www.example.org/?page=subj_&lt;desc.h&gt;</a>)'
+        )
+
     def test_loop_call_loop(self, env):
         tmpl = env.from_string(
             """
@@ -132,7 +138,7 @@ class TestBug(object):
         """
         )
 
-        assert tmpl.render().split() == [text_type(x) for x in range(1, 11)] * 5
+        assert tmpl.render().split() == [str(x) for x in range(1, 11)] * 5
 
     def test_weird_inline_comment(self, env):
         env = Environment(line_statement_prefix="%")
@@ -193,7 +199,7 @@ class TestBug(object):
         """
         )
         rv = t.render(foo=[1]).strip()
-        assert rv == u"1"
+        assert rv == "1"
 
     def test_call_with_args(self, env):
         t = Template(
@@ -227,13 +233,13 @@ class TestBug(object):
                 ]
             ).splitlines()
         ] == [
-            u"<ul><li><p>apo</p><dl>",
-            u"<dl>Realname</dl>",
-            u"<dd>something else</dd>",
-            u"<dl>Description</dl>",
-            u"<dd>test</dd>",
-            u"</dl>",
-            u"</li></ul>",
+            "<ul><li><p>apo</p><dl>",
+            "<dl>Realname</dl>",
+            "<dd>something else</dd>",
+            "<dl>Description</dl>",
+            "<dd>test</dd>",
+            "</dl>",
+            "</li></ul>",
         ]
 
     def test_empty_if_condition_fails(self, env):
@@ -292,11 +298,9 @@ class TestBug(object):
 
         assert e.value.name == "foo/bar.html"
 
-    def test_contextfunction_callable_classes(self, env):
-        from jinja2.utils import contextfunction
-
-        class CallableClass(object):
-            @contextfunction
+    def test_pass_context_callable_class(self, env):
+        class CallableClass:
+            @pass_context
             def __call__(self, ctx):
                 return ctx.resolve("hello")
 
@@ -305,13 +309,6 @@ class TestBug(object):
         expected = "TEST"
 
         assert output == expected
-
-    @pytest.mark.skipif(sys.version_info[0] > 2, reason="This only works on 2.x")
-    def test_old_style_attribute(self, env):
-        class Foo:
-            x = 42
-
-        assert env.getitem(Foo(), "x") == 42
 
     def test_block_set_with_extends(self):
         env = Environment(
@@ -366,9 +363,7 @@ class TestBug(object):
         assert t.render().strip() == "45|6"
 
     def test_macro_escaping(self):
-        env = Environment(
-            autoescape=lambda x: False, extensions=["jinja2.ext.autoescape"]
-        )
+        env = Environment(autoescape=lambda x: False)
         template = "{% macro m() %}<html>{% endmacro %}"
         template += "{% autoescape true %}{{ m() }}{% endautoescape %}"
         assert env.from_string(template).render()
@@ -596,21 +591,6 @@ class TestBug(object):
         env = MyEnvironment(loader=loader)
         assert env.get_template("test").render(foobar="test") == "test"
 
-    def test_legacy_custom_context(self, env):
-        from jinja2.runtime import Context, missing
-
-        class MyContext(Context):
-            def resolve(self, name):
-                if name == "foo":
-                    return 42
-                return super(MyContext, self).resolve(name)
-
-        x = MyContext(env, parent={"bar": 23}, name="foo", blocks={})
-        assert x._legacy_resolve_mode
-        assert x.resolve_or_missing("foo") == 42
-        assert x.resolve_or_missing("bar") == 23
-        assert x.resolve_or_missing("baz") is missing
-
     def test_recursive_loop_bug(self, env):
         tmpl = env.from_string(
             "{%- for value in values recursive %}1{% else %}0{% endfor -%}"
@@ -618,7 +598,147 @@ class TestBug(object):
         assert tmpl.render(values=[]) == "0"
 
     def test_markup_and_chainable_undefined(self):
-        from jinja2 import Markup
+        from markupsafe import Markup
         from jinja2.runtime import ChainableUndefined
 
         assert str(Markup(ChainableUndefined())) == ""
+
+    def test_scoped_block_loop_vars(self, env):
+        tmpl = env.from_string(
+            """\
+Start
+{% for i in ["foo", "bar"] -%}
+{% block body scoped -%}
+{{ loop.index }}) {{ i }}{% if loop.last %} last{% endif -%}
+{%- endblock %}
+{% endfor -%}
+End"""
+        )
+        assert tmpl.render() == "Start\n1) foo\n2) bar last\nEnd"
+
+    def test_pass_context_loop_vars(self, env):
+        @pass_context
+        def test(ctx):
+            return f"{ctx['i']}{ctx['j']}"
+
+        tmpl = env.from_string(
+            """\
+{% set i = 42 %}
+{%- for idx in range(2) -%}
+{{ i }}{{ j }}
+{% set i = idx -%}
+{%- set j = loop.index -%}
+{{ test() }}
+{{ i }}{{ j }}
+{% endfor -%}
+{{ i }}{{ j }}"""
+        )
+        tmpl.globals["test"] = test
+        assert tmpl.render() == "42\n01\n01\n42\n12\n12\n42"
+
+    def test_pass_context_scoped_loop_vars(self, env):
+        @pass_context
+        def test(ctx):
+            return f"{ctx['i']}"
+
+        tmpl = env.from_string(
+            """\
+{% set i = 42 %}
+{%- for idx in range(2) -%}
+{{ i }}
+{%- set i = loop.index0 -%}
+{% block body scoped %}
+{{ test() }}
+{% endblock -%}
+{% endfor -%}
+{{ i }}"""
+        )
+        tmpl.globals["test"] = test
+        assert tmpl.render() == "42\n0\n42\n1\n42"
+
+    def test_pass_context_in_blocks(self, env):
+        @pass_context
+        def test(ctx):
+            return f"{ctx['i']}"
+
+        tmpl = env.from_string(
+            """\
+{%- set i = 42 -%}
+{{ i }}
+{% block body -%}
+{% set i = 24 -%}
+{{ test() }}
+{% endblock -%}
+{{ i }}"""
+        )
+        tmpl.globals["test"] = test
+        assert tmpl.render() == "42\n24\n42"
+
+    def test_pass_context_block_and_loop(self, env):
+        @pass_context
+        def test(ctx):
+            return f"{ctx['i']}"
+
+        tmpl = env.from_string(
+            """\
+{%- set i = 42 -%}
+{% for idx in range(2) -%}
+{{ test() }}
+{%- set i = idx -%}
+{% block body scoped %}
+{{ test() }}
+{% set i = 24 -%}
+{{ test() }}
+{% endblock -%}
+{{ test() }}
+{% endfor -%}
+{{ test() }}"""
+        )
+        tmpl.globals["test"] = test
+
+        # values set within a block or loop should not
+        # show up outside of it
+        assert tmpl.render() == "42\n0\n24\n0\n42\n1\n24\n1\n42"
+
+    @pytest.mark.parametrize("op", ["extends", "include"])
+    def test_cached_extends(self, op):
+        env = Environment(
+            loader=DictLoader(
+                {"base": "{{ x }} {{ y }}", "main": f"{{% {op} 'base' %}}"}
+            )
+        )
+        env.globals["x"] = "x"
+        env.globals["y"] = "y"
+
+        # template globals overlay env globals
+        tmpl = env.get_template("main", globals={"x": "bar"})
+        assert tmpl.render() == "bar y"
+
+        # base was loaded indirectly, it just has env globals
+        tmpl = env.get_template("base")
+        assert tmpl.render() == "x y"
+
+        # set template globals for base, no longer uses env globals
+        tmpl = env.get_template("base", globals={"x": 42})
+        assert tmpl.render() == "42 y"
+
+        # templates are cached, they keep template globals set earlier
+        tmpl = env.get_template("main")
+        assert tmpl.render() == "bar y"
+
+        tmpl = env.get_template("base")
+        assert tmpl.render() == "42 y"
+
+    def test_nested_loop_scoping(self, env):
+        tmpl = env.from_string(
+            "{% set output %}{% for x in [1,2,3] %}hello{% endfor %}"
+            "{% endset %}{{ output }}"
+        )
+        assert tmpl.render() == "hellohellohello"
+
+
+@pytest.mark.parametrize("unicode_char", ["\N{FORM FEED}", "\x85"])
+def test_unicode_whitespace(env, unicode_char):
+    content = "Lorem ipsum\n" + unicode_char + "\nMore text"
+    tmpl = env.from_string(content)
+    assert tmpl.render() == content
