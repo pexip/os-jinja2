@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import pytest
 
 from jinja2 import Environment
@@ -14,14 +13,14 @@ def env(package_loader, tmp_path):
     return Environment(loader=package_loader, bytecode_cache=bytecode_cache)
 
 
-class TestByteCodeCache(object):
+class TestByteCodeCache:
     def test_simple(self, env):
         tmpl = env.get_template("test.html")
         assert tmpl.render().strip() == "BAR"
         pytest.raises(TemplateNotFound, env.get_template, "missing.html")
 
 
-class MockMemcached(object):
+class MockMemcached:
     class Error(Exception):
         pass
 
@@ -44,7 +43,7 @@ class MockMemcached(object):
         raise self.Error()
 
 
-class TestMemcachedBytecodeCache(object):
+class TestMemcachedBytecodeCache:
     def test_dump_load(self):
         memcached = MockMemcached()
         m = MemcachedBytecodeCache(memcached)

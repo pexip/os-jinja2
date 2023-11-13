@@ -1,3 +1,55 @@
+jinja2 (3.1.2-1) unstable; urgency=medium
+
+  [ Thomas Goirand ]
+  * Add python3-pytest as build-depends (now run tests at build time).
+  * Add autopkgtest.
+
+  [ Piotr Ożarowski ]
+  * New upstream release (closes: 1025808, 1023637)
+  * Add 0003-fix-nose-leftovers patch
+  * Bump minimum required python3-pallets-sphinx-themes build dependency
+    (closes: 1005864)
+
+ -- Piotr Ożarowski <piotr@debian.org>  Fri, 24 Feb 2023 16:15:45 +0100
+
+jinja2 (3.0.3-2) unstable; urgency=medium
+
+  * Team upload.
+  * Downgrading python3-babel from depends to recommends (Closes: #1019580).
+
+ -- Thomas Goirand <zigo@debian.org>  Tue, 13 Sep 2022 10:26:29 +0200
+
+jinja2 (3.0.3-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Piotr Ożarowski <piotr@debian.org>  Fri, 11 Feb 2022 13:50:47 +0100
+
+jinja2 (3.0.1-2) unstable; urgency=medium
+
+  * Uploading to unstable.
+
+ -- Thomas Goirand <zigo@debian.org>  Fri, 01 Oct 2021 11:22:02 +0200
+
+jinja2 (3.0.1-1) experimental; urgency=medium
+
+  [ Debian Janitor ]
+  * Remove constraints unnecessary since stretch:
+    + Build-Depends: Drop versioned constraint on python-setuptools.
+
+  [ Thomas Goirand ]
+  * Team upload.
+  * New upstream release.
+  * Ran wrap-and-sort -bastk.
+  * Fixed (build-)depends for this release.
+  * Killed the python2 package.
+  * Rebase patches:
+    - re-wrote py3.9-fix-collections-import.patch
+    - refreshed 0002-docs-disable-sphinxcontrib.log_cabinet.patch
+  * Use debian/jinja.vim instead of the one upstream, gone in this version.
+
+ -- Thomas Goirand <zigo@debian.org>  Fri, 17 Sep 2021 23:25:00 +0200
+
 jinja2 (2.11.3-1pexip3) pexip-bullseye; urgency=medium
 
   * Bullseye rebuild for ARM64 inclusion

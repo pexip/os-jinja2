@@ -11,13 +11,16 @@ code into a reusable class like adding support for internationalization.
 Adding Extensions
 -----------------
 
-Extensions are added to the Jinja environment at creation time.  Once the
-environment is created additional extensions cannot be added.  To add an
+Extensions are added to the Jinja environment at creation time.  To add an
 extension pass a list of extension classes or import paths to the
 ``extensions`` parameter of the :class:`~jinja2.Environment` constructor.  The following
 example creates a Jinja environment with the i18n extension loaded::
 
     jinja_env = Environment(extensions=['jinja2.ext.i18n'])
+
+To add extensions after creation time, use the :meth:`~jinja2.Environment.add_extension` method::
+
+    jinja_env.add_extension('jinja2.ext.debug')
 
 
 .. _i18n-extension:
@@ -31,9 +34,11 @@ The i18n extension can be used in combination with `gettext`_ or
 `Babel`_.  When it's enabled, Jinja provides a ``trans`` statement that
 marks a block as translatable and calls ``gettext``.
 
-After enabling, an application has to provide ``gettext`` and
-``ngettext`` functions, either globally or when rendering. A ``_()``
-function is added as an alias to the ``gettext`` function.
+After enabling, an application has to provide functions for ``gettext``,
+``ngettext``, and optionally ``pgettext`` and ``npgettext``, either
+globally or when rendering. A ``_()`` function is added as an alias to
+the ``gettext`` function.
+
 
 Environment Methods
 ~~~~~~~~~~~~~~~~~~~
@@ -44,12 +49,16 @@ additional methods:
 .. method:: jinja2.Environment.install_gettext_translations(translations, newstyle=False)
 
     Installs a translation globally for the environment. The
-    ``translations`` object must implement ``gettext`` and ``ngettext``
-    (or ``ugettext`` and ``ungettext`` for Python 2).
+    ``translations`` object must implement ``gettext``, ``ngettext``,
+    and optionally ``pgettext`` and ``npgettext``.
     :class:`gettext.NullTranslations`, :class:`gettext.GNUTranslations`,
     and `Babel`_\s ``Translations`` are supported.
 
-    .. versionchanged:: 2.5 Added new-style gettext support.
+    .. versionchanged:: 3.0
+        Added ``pgettext`` and ``npgettext``.
+
+    .. versionchanged:: 2.5
+        Added new-style gettext support.
 
 .. method:: jinja2.Environment.install_null_translations(newstyle=False)
 
@@ -59,17 +68,21 @@ additional methods:
 
     .. versionchanged:: 2.5 Added new-style gettext support.
 
-.. method:: jinja2.Environment.install_gettext_callables(gettext, ngettext, newstyle=False)
+.. method:: jinja2.Environment.install_gettext_callables(gettext, ngettext, newstyle=False, pgettext=None, npgettext=None)
 
-    Install the given ``gettext`` and ``ngettext`` callables into the
-    environment. They should behave exactly like
-    :func:`gettext.gettext` and :func:`gettext.ngettext` (or
-    ``ugettext`` and ``ungettext`` for Python 2).
+    Install the given ``gettext``, ``ngettext``, ``pgettext``, and
+    ``npgettext`` callables into the environment. They should behave
+    exactly like :func:`gettext.gettext`, :func:`gettext.ngettext`,
+    :func:`gettext.pgettext` and :func:`gettext.npgettext`.
 
     If ``newstyle`` is activated, the callables are wrapped to work like
     newstyle callables.  See :ref:`newstyle-gettext` for more information.
 
-    .. versionadded:: 2.5 Added new-style gettext support.
+    .. versionchanged:: 3.0
+        Added ``pgettext`` and ``npgettext``.
+
+    .. versionadded:: 2.5
+        Added new-style gettext support.
 
 .. method:: jinja2.Environment.uninstall_gettext_translations()
 
@@ -86,8 +99,8 @@ additional methods:
         found.
     -   ``function`` is the name of the ``gettext`` function used (if
         the string was extracted from embedded Python code).
-    -   ``message`` is the string itself (``unicode`` on Python 2), or a
-        tuple of strings for functions with multiple arguments.
+    -   ``message`` is the string itself, or a tuple of strings for
+        functions with multiple arguments.
 
     If `Babel`_ is installed, see :ref:`babel-integration` to extract
     the strings.
@@ -110,7 +123,7 @@ The usage of the ``i18n`` extension for template designers is covered in
 :ref:`the template documentation <i18n-in-templates>`.
 
 .. _gettext: https://docs.python.org/3/library/gettext.html
-.. _Babel: http://babel.pocoo.org/
+.. _Babel: https://babel.pocoo.org/
 
 
 Whitespace Trimming
@@ -153,6 +166,10 @@ done with the ``|format`` filter. This requires duplicating work for
     {{ ngettext(
            "%(num)d apple", "%(num)d apples", apples|count
        )|format(num=apples|count) }}
+    {{ pgettext("greeting", "Hello, World!") }}
+    {{ npgettext(
+           "fruit", "%(num)d apple", "%(num)d apples", apples|count
+       )|format(num=apples|count) }}
 
 New style ``gettext`` make formatting part of the call, and behind the
 scenes enforce more consistency.
@@ -162,6 +179,8 @@ scenes enforce more consistency.
     {{ gettext("Hello, World!") }}
     {{ gettext("Hello, %(name)s!", name=name) }}
     {{ ngettext("%(num)d apple", "%(num)d apples", apples|count) }}
+    {{ pgettext("greeting", "Hello, World!") }}
+    {{ npgettext("fruit", "%(num)d apple", "%(num)d apples", apples|count) }}
 
 The advantages of newstyle gettext are:
 

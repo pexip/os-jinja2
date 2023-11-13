@@ -1,195 +1,75 @@
 Frequently Asked Questions
 ==========================
 
-This page answers some of the often asked questions about Jinja.
-
-.. highlight:: html+jinja
 
 Why is it called Jinja?
 -----------------------
 
-The name Jinja was chosen because it's the name of a Japanese temple and
-temple and template share a similar pronunciation.  It is not named after
-the city in Uganda.
+"Jinja" is a Japanese `Shinto shrine`_, or temple, and temple and
+template share a similar English pronunciation. It is not named after
+the `city in Uganda`_.
 
-How fast is it?
----------------
+.. _Shinto shrine: https://en.wikipedia.org/wiki/Shinto_shrine
+.. _city in Uganda: https://en.wikipedia.org/wiki/Jinja%2C_Uganda
 
-We really hate benchmarks especially since they don't reflect much.  The
-performance of a template depends on many factors and you would have to
-benchmark different engines in different situations.  The benchmarks from the
-testsuite show that Jinja has a similar performance to `Mako`_ and is between
-10 and 20 times faster than Django's template engine or Genshi.  These numbers
-should be taken with tons of salt as the benchmarks that took these numbers
-only test a few performance related situations such as looping.  Generally
-speaking the performance of a template engine doesn't matter much as the
-usual bottleneck in a web application is either the database or the application
-code.
 
-.. _Mako: https://www.makotemplates.org/
+How fast is Jinja?
+------------------
 
-How Compatible is Jinja with Django?
-------------------------------------
+Jinja is relatively fast among template engines because it compiles and
+caches template code to Python code, so that the template does not need
+to be parsed and interpreted each time. Rendering a template becomes as
+close to executing a Python function as possible.
 
-The default syntax of Jinja matches Django syntax in many ways.  However
-this similarity doesn't mean that you can use a Django template unmodified
-in Jinja.  For example filter arguments use a function call syntax rather
-than a colon to separate filter name and arguments.  Additionally the
-extension interface in Jinja is fundamentally different from the Django one
-which means that your custom tags won't work any longer.
+Jinja also makes extensive use of caching. Templates are cached by name
+after loading, so future uses of the template avoid loading. The
+template loading itself uses a bytecode cache to avoid repeated
+compiling. The caches can be external to persist across restarts.
+Templates can also be precompiled and loaded as fast Python imports.
 
-Generally speaking you will use much less custom extensions as the Jinja
-template system allows you to use a certain subset of Python expressions
-which can replace most Django extensions.  For example instead of using
-something like this::
+We dislike benchmarks because they don't reflect real use. Performance
+depends on many factors. Different engines have different default
+configurations and tradeoffs that make it unclear how to set up a useful
+comparison. Often, database access, API calls, and data processing have
+a much larger effect on performance than the template engine.
 
-    {% load comments %}
-    {% get_latest_comments 10 as latest_comments %}
-    {% for comment in latest_comments %}
-        ...
-    {% endfor %}
 
-You will most likely provide an object with attributes to retrieve
-comments from the database::
-
-    {% for comment in models.comments.latest(10) %}
-        ...
-    {% endfor %}
-
-Or directly provide the model for quick testing::
-
-    {% for comment in Comment.objects.order_by('-pub_date')[:10] %}
-        ...
-    {% endfor %}
-
-Please keep in mind that even though you may put such things into templates
-it still isn't a good idea.  Queries should go into the view code and not
-the template!
-
-Isn't it a terrible idea to put Logic into Templates?
------------------------------------------------------
+Isn't it a bad idea to put logic in templates?
+----------------------------------------------
 
 Without a doubt you should try to remove as much logic from templates as
-possible.  But templates without any logic mean that you have to do all
-the processing in the code which is boring and stupid.  A template engine
-that does that is shipped with Python and called `string.Template`.  Comes
-without loops and if conditions and is by far the fastest template engine
-you can get for Python.
+possible. With less logic, the template is easier to understand, has
+fewer potential side effects, and is faster to compile and render. But a
+template without any logic means processing must be done in code before
+rendering. A template engine that does that is shipped with Python,
+called :class:`string.Template`, and while it's definitely fast it's not
+convenient.
 
-So some amount of logic is required in templates to keep everyone happy.
-And Jinja leaves it pretty much to you how much logic you want to put into
-templates.  There are some restrictions in what you can do and what not.
+Jinja's features such as blocks, statements, filters, and function calls
+make it much easier to write expressive templates, with very few
+restrictions. Jinja doesn't allow arbitrary Python code in templates, or
+every feature available in the Python language. This keeps the engine
+easier to maintain, and keeps templates more readable.
 
-Jinja neither allows you to put arbitrary Python code into templates nor
-does it allow all Python expressions.  The operators are limited to the
-most common ones and more advanced expressions such as list comprehensions
-and generator expressions are not supported.  This keeps the template engine
-easier to maintain and templates more readable.
+Some amount of logic is required in templates to keep everyone happy.
+Too much logic in the template can make it complex to reason about and
+maintain. It's up to you to decide how your application will work and
+balance how much logic you want to put in the template.
 
-Why is Autoescaping not the Default?
-------------------------------------
 
-There are multiple reasons why automatic escaping is not the default mode
-and also not the recommended one.  While automatic escaping of variables
-means that you will less likely have an XSS problem it also causes a huge
-amount of extra processing in the template engine which can cause serious
-performance problems.  As Python doesn't provide a way to mark strings as
-unsafe Jinja has to hack around that limitation by providing a custom
-string class (the :class:`Markup` string) that safely interacts with safe
-and unsafe strings.
-
-With explicit escaping however the template engine doesn't have to perform
-any safety checks on variables.  Also a human knows not to escape integers
-or strings that may never contain characters one has to escape or already
-HTML markup.  For example when iterating over a list over a table of
-integers and floats for a table of statistics the template designer can
-omit the escaping because he knows that integers or floats don't contain
-any unsafe parameters.
-
-Additionally Jinja is a general purpose template engine and not only used
-for HTML/XML generation.  For example you may generate LaTeX, emails,
-CSS, JavaScript, or configuration files.
-
-Why is the Context immutable?
------------------------------
-
-When writing a :func:`contextfunction` or something similar you may have
-noticed that the context tries to stop you from modifying it.  If you have
-managed to modify the context by using an internal context API you may
-have noticed that changes in the context don't seem to be visible in the
-template.  The reason for this is that Jinja uses the context only as
-primary data source for template variables for performance reasons.
-
-If you want to modify the context write a function that returns a variable
-instead that one can assign to a variable by using set::
-
-    {% set comments = get_latest_comments() %}
-
-My tracebacks look weird.  What's happening?
---------------------------------------------
-
-If the debugsupport module is not compiled and you are using a Python
-installation without ctypes (Python 2.4 without ctypes, Jython or Google's
-AppEngine) Jinja is unable to provide correct debugging information and
-the traceback may be incomplete.  There is currently no good workaround
-for Jython or the AppEngine as ctypes is unavailable there and it's not
-possible to use the debugsupport extension.
-
-If you are working in the Google AppEngine development server you can
-whitelist the ctypes module to restore the tracebacks.  This however won't
-work in production environments::
-
-    import os
-    if os.environ.get('SERVER_SOFTWARE', '').startswith('Dev'):
-        from google.appengine.tools.devappserver2.python import sandbox
-        sandbox._WHITE_LIST_C_MODULES += ['_ctypes', 'gestalt']
-
-Credit for this snippet goes to `Thomas Johansson
-<https://stackoverflow.com/questions/3086091/debug-jinja2-in-google-app-engine/3694434#3694434>`_
-
-Why is there no Python 2.3/2.4/2.5/2.6/3.1/3.2/3.3 support?
------------------------------------------------------------
-
-Python 2.3 is missing a lot of features that are used heavily in Jinja.  This
-decision was made as with the upcoming Python 2.6 and 3.0 versions it becomes
-harder to maintain the code for older Python versions.  If you really need
-Python 2.3 support you either have to use Jinja 1 or other templating
-engines that still support 2.3.
-
-Python 2.4/2.5/3.1/3.2 support was removed when we switched to supporting
-Python 2 and 3 by the same sourcecode (without using 2to3). It was required to
-drop support because only Python 2.6/2.7 and >=3.3 support byte and unicode
-literals in a way compatible to each other version. If you really need support
-for older Python 2 (or 3) versions, you can just use Jinja 2.6.
-
-Python 2.6/3.3 support was dropped because it got dropped in various upstream
-projects (such as wheel or pytest), which would make it difficult to continue
-supporting it. Jinja 2.10 was the last version supporting Python 2.6/3.3.
-
-My Macros are overridden by something
+Why is HTML escaping not the default?
 -------------------------------------
 
-In some situations the Jinja scoping appears arbitrary:
+Jinja provides a feature that can be enabled to escape HTML syntax in
+rendered templates. However, it is disabled by default.
 
-layout.tmpl:
+Jinja is a general purpose template engine, it is not only used for HTML
+documents. You can generate plain text, LaTeX, emails, CSS, JavaScript,
+configuration files, etc. HTML escaping wouldn't make sense for any of
+these document types.
 
-.. sourcecode:: jinja
-
-    {% macro foo() %}LAYOUT{% endmacro %}
-    {% block body %}{% endblock %}
-
-child.tmpl:
-
-.. sourcecode:: jinja
-
-    {% extends 'layout.tmpl' %}
-    {% macro foo() %}CHILD{% endmacro %}
-    {% block body %}{{ foo() }}{% endblock %}
-
-This will print ``LAYOUT`` in Jinja.  This is a side effect of having
-the parent template evaluated after the child one.  This allows child
-templates passing information to the parent template.  To avoid this
-issue rename the macro or variable in the parent template to have an
-uncommon prefix.
-
-.. _Jinja 1: https://pypi.org/project/Jinja/
+While automatic escaping means that you are less likely have an XSS
+problem, it also requires significant extra processing during compiling
+and rendering, which can reduce performance. Jinja uses MarkupSafe for
+escaping, which provides optimized C code for speed, but it still
+introduces overhead to track escaping across methods and formatting.

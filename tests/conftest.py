@@ -1,17 +1,9 @@
-# -*- coding: utf-8 -*-
-import os
+from pathlib import Path
 
 import pytest
 
-from jinja2 import Environment
 from jinja2 import loaders
-from jinja2.utils import have_async_gen
-
-
-def pytest_ignore_collect(path):
-    if "async" in path.basename and not have_async_gen:
-        return True
-    return False
+from jinja2.environment import Environment
 
 
 @pytest.fixture
@@ -35,8 +27,8 @@ def package_loader():
 @pytest.fixture
 def filesystem_loader():
     """returns FileSystemLoader initialized to res/templates directory"""
-    here = os.path.dirname(os.path.abspath(__file__))
-    return loaders.FileSystemLoader(here + "/res/templates")
+    here = Path(__file__).parent.resolve()
+    return loaders.FileSystemLoader(here / "res" / "templates")
 
 
 @pytest.fixture

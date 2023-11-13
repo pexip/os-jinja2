@@ -1,37 +1,34 @@
-# -*- coding: utf-8 -*-
 import random
 from collections import namedtuple
 
 import pytest
+from markupsafe import Markup
 
 from jinja2 import Environment
-from jinja2 import Markup
 from jinja2 import StrictUndefined
+from jinja2 import TemplateRuntimeError
 from jinja2 import UndefinedError
-from jinja2._compat import implements_to_string
-from jinja2._compat import text_type
+from jinja2.exceptions import TemplateAssertionError
 
 
-@implements_to_string
-class Magic(object):
+class Magic:
     def __init__(self, value):
         self.value = value
 
     def __str__(self):
-        return text_type(self.value)
+        return str(self.value)
 
 
-@implements_to_string
-class Magic2(object):
+class Magic2:
     def __init__(self, value1, value2):
         self.value1 = value1
         self.value2 = value2
 
     def __str__(self):
-        return u"(%s,%s)" % (text_type(self.value1), text_type(self.value2))
+        return f"({self.value1},{self.value2})"
 
 
-class TestFilter(object):
+class TestFilter:
     def test_filter_calling(self, env):
         rv = env.call_filter("sum", [1, 2, 3])
         assert rv == 6
@@ -61,7 +58,7 @@ class TestFilter(object):
         ),
     )
     def test_dictsort(self, env, args, expect):
-        t = env.from_string("{{{{ foo|dictsort({args}) }}}}".format(args=args))
+        t = env.from_string(f"{{{{ foo|dictsort({args}) }}}}")
         out = t.render(foo={"aa": 0, "b": 1, "c": 2, "AB": 3})
         assert out == expect
 
@@ -144,18 +141,18 @@ class TestFilter(object):
         assert out == "0"
 
     @pytest.mark.parametrize(
-        ("value", "expect"), (("42", "42.0"), ("abc", "0.0"), ("32.32", "32.32"),)
+        ("value", "expect"), (("42", "42.0"), ("abc", "0.0"), ("32.32", "32.32"))
     )
     def test_float(self, env, value, expect):
-        t = env.from_string("{{ '%s'|float }}" % value)
-        assert t.render() == expect
+        t = env.from_string("{{ value|float }}")
+        assert t.render(value=value) == expect
 
     def test_float_default(self, env):
         t = env.from_string("{{ value|float(default=1.0) }}")
         assert t.render(value="abc") == "1.0"
 
     def test_format(self, env):
-        tmpl = env.from_string("""{{ "%s|%s"|format("a", "b") }}""")
+        tmpl = env.from_string("{{ '%s|%s'|format('a', 'b') }}")
         out = tmpl.render()
         assert out == "a|b"
 
@@ -188,6 +185,10 @@ class TestFilter(object):
         """
         self._test_indent_multiline_template(env, markup=True)
 
+    def test_indent_width_string(self, env):
+        t = env.from_string("{{ 'jinja\nflask'|indent(width='>>> ', first=True) }}")
+        assert t.render() == ">>> jinja\n>>> flask"
+
     @pytest.mark.parametrize(
         ("value", "expect"),
         (
@@ -198,23 +199,23 @@ class TestFilter(object):
         ),
     )
     def test_int(self, env, value, expect):
-        t = env.from_string("{{ '%s'|int }}" % value)
-        assert t.render() == expect
+        t = env.from_string("{{ value|int }}")
+        assert t.render(value=value) == expect
 
     @pytest.mark.parametrize(
         ("value", "base", "expect"),
-        (("0x4d32", 16, "19762"), ("011", 8, "9"), ("0x33Z", 16, "0"),),
+        (("0x4d32", 16, "19762"), ("011", 8, "9"), ("0x33Z", 16, "0")),
     )
     def test_int_base(self, env, value, base, expect):
-        t = env.from_string("{{ '%s'|int(base=%d) }}" % (value, base))
-        assert t.render() == expect
+        t = env.from_string("{{ value|int(base=base) }}")
+        assert t.render(value=value, base=base) == expect
 
     def test_int_default(self, env):
         t = env.from_string("{{ value|int(default=1) }}")
         assert t.render(value="abc") == "1"
 
     def test_int_special_method(self, env):
-        class IntIsh(object):
+        class IntIsh:
             def __int__(self):
                 return 42
 
@@ -250,6 +251,17 @@ class TestFilter(object):
         out = tmpl.render()
         assert out == "foo"
 
+    def test_items(self, env):
+        d = {i: c for i, c in enumerate("abc")}
+        tmpl = env.from_string("""{{ d|items|list }}""")
+        out = tmpl.render(d=d)
+        assert out == "[(0, 'a'), (1, 'b'), (2, 'c')]"
+
+    def test_items_undefined(self, env):
+        tmpl = env.from_string("""{{ d|items|list }}""")
+        out = tmpl.render()
+        assert out == "[]"
+
     def test_pprint(self, env):
         from pprint import pformat
 
@@ -282,7 +294,7 @@ class TestFilter(object):
     def test_string(self, env):
         x = [1, 2, 3, 4, 5]
         tmpl = env.from_string("""{{ obj|string }}""")
-        assert tmpl.render(obj=x) == text_type(x)
+        assert tmpl.render(obj=x) == str(x)
 
     def test_title(self, env):
         tmpl = env.from_string("""{{ "foo bar"|title }}""")
@@ -323,30 +335,41 @@ class TestFilter(object):
             "{{ smalldata|truncate(15) }}"
         )
         out = tmpl.render(data="foobar baz bar" * 1000, smalldata="foobar baz bar")
-        msg = "Current output: %s" % out
-        assert out == "foobar baz b>>>|foobar baz>>>|foobar baz bar", msg
+        assert out == "foobar baz b>>>|foobar baz>>>|foobar baz bar"
 
     def test_truncate_very_short(self, env):
         tmpl = env.from_string(
             '{{ "foo bar baz"|truncate(9) }}|{{ "foo bar baz"|truncate(9, true) }}'
         )
         out = tmpl.render()
-        assert out == "foo bar baz|foo bar baz", out
+        assert out == "foo bar baz|foo bar baz"
 
     def test_truncate_end_length(self, env):
         tmpl = env.from_string('{{ "Joel is a slug"|truncate(7, true) }}')
         out = tmpl.render()
-        assert out == "Joel...", "Current output: %s" % out
+        assert out == "Joel..."
 
     def test_upper(self, env):
         tmpl = env.from_string('{{ "foo"|upper }}')
         assert tmpl.render() == "FOO"
 
     def test_urlize(self, env):
+        tmpl = env.from_string('{{ "foo example.org bar"|urlize }}')
+        assert tmpl.render() == (
+            'foo <a href="https://example.org" rel="noopener">' "example.org</a> bar"
+        )
         tmpl = env.from_string('{{ "foo http://www.example.com/ bar"|urlize }}')
         assert tmpl.render() == (
             'foo <a href="http://www.example.com/" rel="noopener">'
             "http://www.example.com/</a> bar"
+        )
+        tmpl = env.from_string('{{ "foo mailto:email@example.com bar"|urlize }}')
+        assert tmpl.render() == (
+            'foo <a href="mailto:email@example.com">email@example.com</a> bar'
+        )
+        tmpl = env.from_string('{{ "foo email@example.com bar"|urlize }}')
+        assert tmpl.render() == (
+            'foo <a href="mailto:email@example.com">email@example.com</a> bar'
         )
 
     def test_urlize_rel_policy(self):
@@ -365,6 +388,17 @@ class TestFilter(object):
             tmpl.render()
             == 'foo <a href="http://www.example.com/" rel="noopener" target="_blank">'
             "http://www.example.com/</a> bar"
+        )
+
+    def test_urlize_extra_schemes_parameter(self, env):
+        tmpl = env.from_string(
+            '{{ "foo tel:+1-514-555-1234 ftp://localhost bar"|'
+            'urlize(extra_schemes=["tel:", "ftp:"]) }}'
+        )
+        assert tmpl.render() == (
+            'foo <a href="tel:+1-514-555-1234" rel="noopener">'
+            'tel:+1-514-555-1234</a> <a href="ftp://localhost" rel="noopener">'
+            "ftp://localhost</a> bar"
         )
 
     def test_wordcount(self, env):
@@ -523,7 +557,7 @@ class TestFilter(object):
         t = env.from_string(source)
         assert t.render() == expect
 
-    @pytest.mark.parametrize("name,expect", (("min", "1"), ("max", "9"),))
+    @pytest.mark.parametrize(("name", "expect"), [("min", "1"), ("max", "9")])
     def test_min_max_attribute(self, env, name, expect):
         t = env.from_string("{{ items|" + name + '(attribute="value") }}')
         assert t.render(items=map(Magic, [5, 1, 9])) == expect
@@ -570,6 +604,40 @@ class TestFilter(object):
             "",
         ]
 
+    def test_groupby_default(self, env):
+        tmpl = env.from_string(
+            "{% for city, items in users|groupby('city', default='NY') %}"
+            "{{ city }}: {{ items|map(attribute='name')|join(', ') }}\n"
+            "{% endfor %}"
+        )
+        out = tmpl.render(
+            users=[
+                {"name": "emma", "city": "NY"},
+                {"name": "smith", "city": "WA"},
+                {"name": "john"},
+            ]
+        )
+        assert out == "NY: emma, john\nWA: smith\n"
+
+    @pytest.mark.parametrize(
+        ("case_sensitive", "expect"),
+        [
+            (False, "a: 1, 3\nb: 2\n"),
+            (True, "A: 3\na: 1\nb: 2\n"),
+        ],
+    )
+    def test_groupby_case(self, env, case_sensitive, expect):
+        tmpl = env.from_string(
+            "{% for k, vs in data|groupby('k', case_sensitive=cs) %}"
+            "{{ k }}: {{ vs|join(', ', attribute='v') }}\n"
+            "{% endfor %}"
+        )
+        out = tmpl.render(
+            data=[{"k": "a", "v": 1}, {"k": "b", "v": 2}, {"k": "A", "v": 3}],
+            cs=case_sensitive,
+        )
+        assert out == expect
+
     def test_filtertag(self, env):
         tmpl = env.from_string(
             "{% filter upper|replace('FOO', 'foo') %}foobar{% endfilter %}"
@@ -590,7 +658,7 @@ class TestFilter(object):
 
     def test_forceescape(self, env):
         tmpl = env.from_string("{{ x|forceescape }}")
-        assert tmpl.render(x=Markup("<div />")) == u"&lt;div /&gt;"
+        assert tmpl.render(x=Markup("<div />")) == "&lt;div /&gt;"
 
     def test_safe(self, env):
         env = Environment(autoescape=True)
@@ -603,10 +671,10 @@ class TestFilter(object):
         ("value", "expect"),
         [
             ("Hello, world!", "Hello%2C%20world%21"),
-            (u"Hello, world\u203d", "Hello%2C%20world%E2%80%BD"),
+            ("Hello, world\u203d", "Hello%2C%20world%E2%80%BD"),
             ({"f": 1}, "f=1"),
             ([("f", 1), ("z", 2)], "f=1&amp;z=2"),
-            ({u"\u203d": 1}, "%E2%80%BD=1"),
+            ({"\u203d": 1}, "%E2%80%BD=1"),
             ({0: 1}, "0=1"),
             ([("a b/c", "a b/c")], "a+b%2Fc=a+b%2Fc"),
             ("a b/c", "a%20b/c"),
@@ -649,6 +717,12 @@ class TestFilter(object):
         tmpl = env.from_string(
             '{{ users|map(attribute="lastname", default="smith")|join(", ") }}'
         )
+        test_list = env.from_string(
+            '{{ users|map(attribute="lastname", default=["smith","x"])|join(", ") }}'
+        )
+        test_str = env.from_string(
+            '{{ users|map(attribute="lastname", default="")|join(", ") }}'
+        )
         users = [
             Fullname("john", "lennon"),
             Fullname("jane", "edwards"),
@@ -656,6 +730,8 @@ class TestFilter(object):
             Firstname("mike"),
         ]
         assert tmpl.render(users=users) == "lennon, edwards, None, smith"
+        assert test_list.render(users=users) == "lennon, edwards, None, ['smith', 'x']"
+        assert test_str.render(users=users) == "lennon, edwards, None, "
 
     def test_simple_select(self, env):
         env = Environment()
@@ -749,3 +825,49 @@ class TestFilter(object):
         t = env.from_string("{{ s|wordwrap(20) }}")
         result = t.render(s="Hello!\nThis is Jinja saying something.")
         assert result == "Hello!\nThis is Jinja saying\nsomething."
+
+    def test_filter_undefined(self, env):
+        with pytest.raises(TemplateAssertionError, match="No filter named 'f'"):
+            env.from_string("{{ var|f }}")
+
+    def test_filter_undefined_in_if(self, env):
+        t = env.from_string("{%- if x is defined -%}{{ x|f }}{%- else -%}x{% endif %}")
+        assert t.render() == "x"
+        with pytest.raises(TemplateRuntimeError, match="No filter named 'f'"):
+            t.render(x=42)
+
+    def test_filter_undefined_in_elif(self, env):
+        t = env.from_string(
+            "{%- if x is defined -%}{{ x }}{%- elif y is defined -%}"
+            "{{ y|f }}{%- else -%}foo{%- endif -%}"
+        )
+        assert t.render() == "foo"
+        with pytest.raises(TemplateRuntimeError, match="No filter named 'f'"):
+            t.render(y=42)
+
+    def test_filter_undefined_in_else(self, env):
+        t = env.from_string(
+            "{%- if x is not defined -%}foo{%- else -%}{{ x|f }}{%- endif -%}"
+        )
+        assert t.render() == "foo"
+        with pytest.raises(TemplateRuntimeError, match="No filter named 'f'"):
+            t.render(x=42)
+
+    def test_filter_undefined_in_nested_if(self, env):
+        t = env.from_string(
+            "{%- if x is not defined -%}foo{%- else -%}{%- if y "
+            "is defined -%}{{ y|f }}{%- endif -%}{{ x }}{%- endif -%}"
+        )
+        assert t.render() == "foo"
+        assert t.render(x=42) == "42"
+        with pytest.raises(TemplateRuntimeError, match="No filter named 'f'"):
+            t.render(x=24, y=42)
+
+    def test_filter_undefined_in_condexpr(self, env):
+        t1 = env.from_string("{{ x|f if x is defined else 'foo' }}")
+        t2 = env.from_string("{{ 'foo' if x is not defined else x|f }}")
+        assert t1.render() == t2.render() == "foo"
+
+        with pytest.raises(TemplateRuntimeError, match="No filter named 'f'"):
+            t1.render(x=42)
+            t2.render(x=42)
