@@ -1,3 +1,11 @@
+jinja2 (3.1.2-1+deb12u1) bookworm; urgency=medium
+
+  * Non-maintainer upload.
+  * CVE-2024-22195: HTML attribute injection (Closes: #1060748)
+  * CVE-2024-34064: HTML attribute injection (Closes: #1070712)
+
+ -- Adrian Bunk <bunk@debian.org>  Sat, 07 Dec 2024 19:15:36 +0200
+
 jinja2 (3.1.2-1) unstable; urgency=medium
 
   [ Thomas Goirand ]

@@ -1,3 +1,5 @@
 py3.9-fix-collections-import.patch
 0002-docs-disable-sphinxcontrib.log_cabinet.patch
 0003-fix-nose-leftovers.patch
+0001-xmlattr-filter-disallows-keys-with-spaces.patch
+0002-disallow-invalid-characters-in-keys-to-xmlattr-filte.patch
