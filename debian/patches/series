@@ -3,3 +3,5 @@ py3.9-fix-collections-import.patch
 0003-fix-nose-leftovers.patch
 0001-xmlattr-filter-disallows-keys-with-spaces.patch
 0002-disallow-invalid-characters-in-keys-to-xmlattr-filte.patch
+0006-Fix-CVE-2024-56201.patch
+0007-Fix-CVE-2024-56326.patch
