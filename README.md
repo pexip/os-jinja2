@@ -1,29 +1,3 @@
-Metadata-Version: 2.4
-Name: Jinja2
-Version: 3.1.6
-Summary: A very fast and expressive template engine.
-Maintainer-email: Pallets <contact@palletsprojects.com>
-Requires-Python: >=3.7
-Description-Content-Type: text/markdown
-Classifier: Development Status :: 5 - Production/Stable
-Classifier: Environment :: Web Environment
-Classifier: Intended Audience :: Developers
-Classifier: License :: OSI Approved :: BSD License
-Classifier: Operating System :: OS Independent
-Classifier: Programming Language :: Python
-Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
-Classifier: Topic :: Text Processing :: Markup :: HTML
-Classifier: Typing :: Typed
-License-File: LICENSE.txt
-Requires-Dist: MarkupSafe>=2.0
-Requires-Dist: Babel>=2.7 ; extra == "i18n"
-Project-URL: Changes, https://jinja.palletsprojects.com/changes/
-Project-URL: Chat, https://discord.gg/pallets
-Project-URL: Documentation, https://jinja.palletsprojects.com/
-Project-URL: Donate, https://palletsprojects.com/donate
-Project-URL: Source, https://github.com/pallets/jinja/
-Provides-Extra: i18n
-
 # Jinja
 
 Jinja is a fast, expressive, extensible templating engine. Special
@@ -81,4 +55,3 @@ contribute, including reporting issues, requesting features, asking or answering
 questions, and making PRs.
 
 [contrib]: https://palletsprojects.com/contributing/
-

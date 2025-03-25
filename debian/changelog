@@ -1,38 +1,59 @@
-jinja2 (3.1.2-1+deb12u2) bookworm; urgency=medium
+jinja2 (3.1.6-1) unstable; urgency=medium
 
-  * Non-maintainer upload by the LTS security team.
-  * Fix CVE-2024-56201:
-    In versions on the 3.x branch prior to 3.1.5, a bug in the Jinja compiler
-    allows an attacker that controls both the content and filename of a template
-    to execute arbitrary Python code, regardless of if Jinja's sandbox is used.
-    To exploit the vulnerability, an attacker needs to control both the filename
-    and the contents of a template. Whether that is the case depends on the type
-    of application using Jinja. This vulnerability impacts users of applications
-    which execute untrusted templates where the template author can also choose
-    the template filename.
-  * Fix CVE-2024-56326:
-    Prior to 3.1.5, An oversight in how the Jinja sandboxed environment detects
-    calls to str.format allows an attacker that controls the content of a
-    template to execute arbitrary Python code. To exploit the vulnerability, an
-    attacker needs to control the content of a template. Whether that is the
-    case depends on the type of application using Jinja. This vulnerability
-    impacts users of applications which execute untrusted templates. Jinja's
-    sandbox does catch calls to str.format and ensures they don't escape the
-    sandbox. However, it's possible to store a reference to a malicious string's
-    format method, then pass that to a filter that calls it. No such filters are
-    built-in to Jinja, but could be present through custom filters in an
-    application. After the fix, such indirect calls are also handled by the
-    sandbox.
+  * Team upload.
+  * New upstream release:
+    - CVE-2025-27516: The |attr filter does not bypass the environment's
+      attribute lookup, allowing the sandbox to apply its checks (closes:
+      #1099690).
 
- -- Lee Garrett <debian@rocketjump.eu>  Thu, 27 Feb 2025 22:30:54 +0100
+ -- Colin Watson <cjwatson@debian.org>  Tue, 25 Mar 2025 22:31:52 +0000
 
-jinja2 (3.1.2-1+deb12u1) bookworm; urgency=medium
+jinja2 (3.1.5-2) unstable; urgency=medium
+
+  * Team upload.
+  * Drop old dependency on setuptools & pkg_resources:
+    packages now uses "flit.
+
+ -- Alexandre Detiste <tchet@debian.org>  Mon, 03 Feb 2025 00:49:36 +0100
+
+jinja2 (3.1.5-1) unstable; urgency=high
+
+  * Team upload.
+  * New upstream release
+    - CVE-2024-56201: Compiler sandbox escape (Closes: #1091329)
+    - CVE-2024-56326: Compiler sandbox escape (Closes: #1091331).
+  * Update path to examples, examples/* -> docs/examples/*.
+  * Stop trying to install CHANGES.rst, which has gone.
+  * Add build-deps on flit, pybuild-plugin-pyproject.
+  * Add autopkgtest dep on python3-all given use of 'py3versions -s'.
+  * Drop backported upstream commits included in this release.
+  * Refresh remaining patches.
+
+ -- Sean Whitton <spwhitton@spwhitton.name>  Wed, 22 Jan 2025 12:55:28 +0000
+
+jinja2 (3.1.3-2) unstable; urgency=medium
+
+  * Team upload.
+  * Fix d/watch for new PyPi archive naming policy
+
+ -- Alexandre Detiste <tchet@debian.org>  Tue, 07 Jan 2025 22:44:21 +0100
+
+jinja2 (3.1.3-1.1) unstable; urgency=medium
 
   * Non-maintainer upload.
-  * CVE-2024-22195: HTML attribute injection (Closes: #1060748)
+  * Backport fixes for FTBFS with Python 3.13. (Closes: #1088325)
   * CVE-2024-34064: HTML attribute injection (Closes: #1070712)
 
- -- Adrian Bunk <bunk@debian.org>  Sat, 07 Dec 2024 19:15:36 +0200
+ -- Adrian Bunk <bunk@debian.org>  Sun, 08 Dec 2024 07:59:01 +0200
+
+jinja2 (3.1.3-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream version 3.1.3 (Closes: #1060748)
+  * CVE-2024-22195: HTML attribute injection when passing user input as
+    keys to xmlattr filter
+
+ -- Hans-Christoph Steiner <hans@eds.org>  Tue, 05 Mar 2024 09:32:06 +0100
 
 jinja2 (3.1.2-1) unstable; urgency=medium
 
