@@ -7,16 +7,18 @@ Uploaders:
  Debian Python Team <team+python@tracker.debian.org>,
 Build-Depends:
  debhelper-compat (= 12),
- dh-python,
+ dh-sequence-python3,
+ flit,
+ pybuild-plugin-pyproject,
  python3-all,
  python3-babel,
  python3-markupsafe (>= 2.0),
  python3-pallets-sphinx-themes (>= 2.0.2),
+ python3-trio,
  python3-pygments,
- python3-pytest,
- python3-setuptools,
- python3-sphinx,
- python3-sphinx-issues,
+ python3-pytest <!nocheck>,
+ python3-sphinx <!nodoc>,
+ python3-sphinx-issues <!nodoc>,
 Standards-Version: 4.5.0
 Homepage: http://jinja.pocoo.org/
 Vcs-Git: https://salsa.debian.org/python-team/packages/jinja2.git
@@ -46,7 +48,6 @@ Depends:
  ${python3:Depends},
 Recommends:
  python3-babel,
- python3-pkg-resources,
 Suggests:
  python-jinja2-doc,
 Breaks:
